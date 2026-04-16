@@ -1,4 +1,5 @@
 """Filter component protocol."""
+
 from typing import Any, Protocol
 
 

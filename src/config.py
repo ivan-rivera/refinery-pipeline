@@ -3,6 +3,7 @@
 Reads variables from .env and environment. All fields have defaults so
 the pipeline runs without a .env file during development and testing.
 """
+
 from __future__ import annotations
 
 from functools import lru_cache

@@ -1,4 +1,5 @@
 """Tests for the filter component."""
+
 from typing import Any
 
 from src.components.filter import filter as apply_filter

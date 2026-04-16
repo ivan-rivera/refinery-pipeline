@@ -1,4 +1,5 @@
 """Basic filter implementations."""
+
 from typing import Any
 
 

@@ -1,4 +1,5 @@
 """Shared pytest fixtures."""
+
 import pytest
 from click.testing import CliRunner
 

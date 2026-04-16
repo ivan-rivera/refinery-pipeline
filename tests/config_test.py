@@ -1,4 +1,5 @@
 """Tests for settings."""
+
 from src.config import Settings, get_settings
 
 

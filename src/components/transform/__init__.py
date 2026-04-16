@@ -5,6 +5,7 @@ Usage:
     result = apply_transform(data)                       # uses _DEFAULT
     result = apply_transform(data, fns=[my_transform])   # custom sequence
 """
+
 from collections.abc import Sequence
 from typing import Any
 

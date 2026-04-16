@@ -26,4 +26,3 @@ jobs:
           while read -r pr; do
             gh pr update-branch "$pr" --repo "$GITHUB_REPOSITORY" || true
           done
-
