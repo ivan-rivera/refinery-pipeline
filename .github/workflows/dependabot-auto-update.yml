@@ -1,0 +1,29 @@
+name: Dependabot Auto-Update Branch
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-dependabot-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update out-of-date Dependabot PR branches
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr list \
+            --repo "$GITHUB_REPOSITORY" \
+            --author "app/dependabot" \
+            --state open \
+            --json number \
+            --jq '.[].number' | \
+          while read -r pr; do
+            gh pr update-branch "$pr" --repo "$GITHUB_REPOSITORY" || true
+          done
+

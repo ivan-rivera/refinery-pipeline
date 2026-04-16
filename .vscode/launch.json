@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Pipeline: Run",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pipeline",
+            "args": ["run"],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Pipeline: Dry Run",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pipeline",
+            "args": ["run", "--dry-run"],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}

@@ -1,0 +1,124 @@
+[project]
+name = "refinery-pipeline"
+version = "0.1.0"
+description = "Autonomous precious metal swing trading bot"
+requires-python = ">=3.13"
+authors = [
+    { name="Ivan Rivera", email="ivan.s.rivera@gmail.com" }
+]
+dependencies = [
+    "click>=8.1.0",
+    "rich>=14.0.0",
+    "pydantic-settings>=2.13.0",
+]
+
+[project.scripts]
+pipeline = "src.pipeline:cli"
+
+[dependency-groups]
+test = [
+    "pytest>=9.0.2",
+    "pytest-mock>=3.15.1",
+    "hypothesis>=6.151.6",
+    "pytest-cov>=7.0.0",
+]
+
+dev = [
+    { include-group = "test" },
+    "ruff>=0.15.0",
+    "pre-commit>=4.5.1",
+    "mypy>=1.19.1",
+    "commitizen>=4.13.7",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+python-preference = "only-managed"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.pytest.ini_options]
+addopts = ["--cov=src", "--cov-report=term-missing", "-ra", "-q", "--strict-markers", "--strict-config"]
+testpaths = ["tests"]
+markers = [
+    "unit",
+    "integration",
+    "e2e",
+    "slow",
+]
+filterwarnings = ["error", "ignore::DeprecationWarning", "ignore::FutureWarning", "ignore::ResourceWarning"]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+parallel = true
+omit = ["tests/*", "**/__init__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "if __name__ == '__main__':",
+    "if TYPE_CHECKING:",
+    "# pragma: no cover",
+    "@abstractmethod",
+    "raise NotImplementedError",
+]
+
+[tool.ruff]
+# python_version must be 2-component (e.g. "3.13") — the filter strips dots, "3.13.1" would produce invalid "py3131"
+target-version = "py313"
+line-length = 120
+src = ["src", "tests"]
+exclude = [".git", ".mypy_cache", ".ruff_cache", ".venv", "__pycache__", "build", "dist"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "B", "C4", "UP", "ARG", "SIM", "PTH", "RUF", "ASYNC", "S",
+    "A", "DTZ", "T10", "ICN", "LOG", "G", "PIE", "PYI", "RSE", "RET", "SLF", "SLOT",
+    "INT", "PGH", "PL", "TRY", "FLY", "PERF", "FURB", "T20", "FA", "ISC", "COM", "TID",
+]
+ignore = ["E501", "S101", "PLR2004", "TRY003", "PLR0913", "PGH003", "COM812"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["ARG"]
+"src/components/*/__init__.py" = ["A001"]  # component orchestrators intentionally shadow builtins (e.g. filter)
+
+[tool.ruff.lint.isort]
+force-single-line = false
+combine-as-imports = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+docstring-code-line-length = 120
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unreachable = true
+pretty = true
+explicit_package_bases = true
+namespace_packages = true
+plugins = ["pydantic.mypy"]
+disable_error_code = ["type-arg", "no-any-return"]
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+ignore_errors = true
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "semver"
+version_provider = "uv"
+major_version_zero = true
+update_changelog_on_bump = true
+tag_regex = "v\\d+\\.\\d+\\.\\d+"
+annotate_tag = true

@@ -1,0 +1,11 @@
+---
+description: Standards for Python development and file structure
+globs: **/*.py
+---
+
+- Follow the Google Python Style Guide
+- Use "double quotes" for strings
+- Prefer explicit imports
+- Keep functions short and composable
+- Avoid magic numbers — put constants in src/config/constants.py
+- Prefer small, surgical changes over large rewrites

@@ -1,0 +1,10 @@
+---
+description: General project guidelines and best practices
+alwaysApply: true
+---
+
+- Do not modify unrelated files
+- Respect existing project structure and patterns
+- Avoid overengineering MVP features
+- Always consider design patterns and best practices that we may use here
+- Keep code clean and minimalistic. If unsure, do less, not more

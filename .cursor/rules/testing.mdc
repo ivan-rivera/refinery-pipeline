@@ -1,0 +1,11 @@
+---
+description: Testing and validation rules
+globs: **/tests/*.py
+---
+
+- Use pytest for testing, NEVER use unittest or import from it
+- Write tests for new functionality
+- Write the shortest, most minimalist tests possible that cover core functionality
+- Use coverage.py to track test coverage
+- Use pytest-cov to report test coverage
+- Use pytest-mock to mock dependencies
