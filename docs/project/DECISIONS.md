@@ -31,7 +31,7 @@ FastAPI server
 We need to store trade metadata, such as the trading thesis, expiry dates, and so on, to do that, we need a storage layer
 
 #### Decision
-Google sheets allows us to read and write structured data without the overhead of a fully blown DB
+Google sheets allows us to read and write structured data without the overhead of a fully blown DB. Moving forward, we may choose to introduce ChromaDB for vector storage and SQLite for more complex DB modelling, but for now Google Sheets will be our data storage layer, to keep things simple.
 
 #### Consequences
 - We can view and interact with the database
@@ -39,41 +39,3 @@ Google sheets allows us to read and write structured data without the overhead o
 
 #### Alternatives Considered
 PostgreSQL vs Supabase was considered here, but it was more complex
-
-
-### ADR-003: Use SQLite for the cache storage
-
-**Date:** 2026-04-16
-**Status:** Accepted
-
-#### Context
-We want to be able to cache some data where flat file modelling may get complicated, so we need an alternative storage layer
-
-#### Decision
-Local SQLite it is
-
-#### Consequences
-- We can run a proper database locally
-- If the file gets lost or corrupted, our entire database dies
-- Migrating to another DB variant may come with costs
-
-#### Alternatives Considered
-Keeping the data in the same layer as Google Sheets, but it may get messy
-
-
-### ADR-003: Use ChromaDB for learnings
-
-**Date:** 2026-04-16
-**Status:** Accepted
-
-#### Context
-We are likely to be generating a lot of learnings during this process and semantic search layer is likely to become important
-
-#### Decision
-ChromaDB offers a local, zero-infra, Python-native solution, we will go with that.
-
-#### Consequences
-- Our entire database is stored on a local machine
-
-#### Alternatives Considered
-Local markdowns were considered as extra context and these may work well for ~50 or so learnings, but beyond that point Chroma becomes rather useful. We are working with the assumption that we will hit that point quickly.
