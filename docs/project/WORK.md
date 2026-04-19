@@ -27,4 +27,3 @@
 - [ ] Set up SQLite (test and prod)
 - [ ] Set up ChromaDB (test and prod)
 - [ ] Give Claude and Cursor skills to access the Google Sheets, SQLite and ChromaDB and pipeline execution with test environments
-

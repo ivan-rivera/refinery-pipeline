@@ -1,7 +1,7 @@
 """Pipeline CLI smoke tests."""
 
 from click.testing import CliRunner
-from src.pipeline import cli
+from src.pipelines.trade import cli
 
 
 def test_run_exits_cleanly(runner: CliRunner) -> None:

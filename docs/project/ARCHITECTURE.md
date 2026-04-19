@@ -73,7 +73,7 @@ Positions are closed if any of the following are met:
 * Take-profit reached
 * Thesis expiry reached
 
-Stop-loss and take-profit triggers should be executed automatically by the trading system, whereas the expiry condition will require the system to place a trade. 
+Stop-loss and take-profit triggers should be executed automatically by the trading system, whereas the expiry condition will require the system to place a trade.
 
 #### b) Trade Logging
 
@@ -242,7 +242,7 @@ Each trade records:
 * Ranking position
 * Expiry date
 
-Trade metadata will be stored in SQLite. Also a smaller, human-readable version of this data will be stored in Google Sheets. 
+Trade metadata will be stored in SQLite. Also a smaller, human-readable version of this data will be stored in Google Sheets.
 
 ---
 
