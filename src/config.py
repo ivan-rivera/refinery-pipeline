@@ -7,8 +7,10 @@ the pipeline runs without a .env file during development and testing.
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,10 +21,19 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
+        populate_by_name=True,
     )
 
     app_name: str = "refinery-pipeline"
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
+
+    google_creds_path: Path | None = Field(default=None, alias="GOOGLE_CREDS_PATH")
+    google_sheet_id_test: str = Field(default="", alias="GOOGLE_SHEET_ID_TEST")
+    google_sheet_id_prod: str = Field(default="", alias="GOOGLE_SHEET_ID_PROD")
+
+    def sheet_id(self, *, debug: bool) -> str:
+        """Return the Google Sheet id for the current environment."""
+        return self.google_sheet_id_test if debug else self.google_sheet_id_prod
 
 
 @lru_cache

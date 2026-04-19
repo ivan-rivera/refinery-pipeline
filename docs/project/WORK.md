@@ -18,10 +18,12 @@
 ### E1 - Foundation
 
 - [ ] Scaffold the repo structure (pipelines/, agents/, tools/, config/, tests/)
-- [ ] pydantic-settings config class with env vars
+- [x] pydantic-settings config class with env vars
 - [ ] Write a CLAUDE.md that gives Claude Code the lay of the land — project purpose, repo structure, conventions, what not to touch
 
 ### E2 - Data Layer
 
-- [ ] Set up a Google Sheet for the project (test and prod)
+- [x] Set up a Google Sheet for the project (test and prod)
+- [x] Wire Google Sheets connectivity (service account + gspread, typed `SheetsClient` with full CRUD on `universe` and `holdings`, `--debug` flag selects test vs prod sheet)
+- [ ] Define schemas for the remaining tabs (`closed`, `learnings`)
 - [ ] Give Claude and Cursor skills to access the Google Sheets, SQLite and ChromaDB and pipeline execution with test environments
