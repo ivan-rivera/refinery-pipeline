@@ -11,10 +11,15 @@ uv sync
 ## Usage
 
 ```bash
+# Trade pipeline
 just run                              # run with defaults
 just run --input data/in.json         # specify input
 just run --output data/out.json       # specify output
 just run --dry-run                    # preview without side effects
+
+# Shortlist pipeline
+just shortlist                        # run shortlist pipeline
+just shortlist --dry-run              # preview shortlist without side effects
 ```
 
 ## Scheduling (macOS)

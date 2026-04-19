@@ -13,7 +13,8 @@ dependencies = [
 ]
 
 [project.scripts]
-pipeline = "src.pipeline:cli"
+pipeline = "src.pipelines.trade:cli"
+pipeline-shortlist = "src.pipelines.shortlist:cli"
 
 [dependency-groups]
 test = [

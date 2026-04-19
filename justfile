@@ -4,7 +4,10 @@ install:
     uv sync --all-groups
 
 run *ARGS:
-    uv run pipeline run {{ARGS}}
+    uv run python -m src.pipelines.trade run {{ARGS}}
+
+shortlist *ARGS:
+    uv run python -m src.pipelines.shortlist run {{ARGS}}
 
 lint:
     uv run pre-commit run --all-files

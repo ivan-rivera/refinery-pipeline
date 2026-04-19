@@ -49,7 +49,7 @@ Each agent module must define, in order: a typed `Deps` dataclass, a `Result(Bas
 - Multi-agent: subagents are called via tools on the supervisor agent; each subagent result is serialised to JSON before being passed up
 - The supervisor is the only agent that may call the trader agent
 
-## CLI (applies to src/pipeline.py)
+## CLI (applies to src/pipelines/trade.py)
 - This project uses `click` for CLI argument and option parsing
 - The `cli` group is the entrypoint; subcommands are decorated with `@cli.command()`
 - Pass click context or options explicitly into components — do not read from env inside components
