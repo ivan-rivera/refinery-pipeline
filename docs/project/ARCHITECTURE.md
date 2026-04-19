@@ -263,6 +263,8 @@ This data will be stored in SQLite. Additionally, we will store the following da
 * Historical trades with outcomes and learnings
 * Global learnings _for the operator_, suggestions to improve the system rather than trading patterns (e.g. "reduce or increase pipeline frequency" or "expand ticker universe", as opposed to "gold correlation with silver is weakening")
 
+The Google Sheet is mirrored across two spreadsheets — one for testing (`GOOGLE_SHEET_ID_TEST`) and one for production (`GOOGLE_SHEET_ID_PROD`) — sharing identical tab structure (`universe`, `holdings`, `closed`, `learnings`). The pipeline selects between them via the `--debug/--no-debug` CLI flag, which is plumbed explicitly into the `SheetsClient` factory (no env-var coupling inside components). Authentication uses a Google service account; the JSON key path is read from `GOOGLE_CREDS_PATH` and the sheets must be shared with the service account's `client_email`. The first iteration implements typed CRUD over `universe` (ticker, description) and `holdings` (date, ticker, entry/stop/take prices as `Decimal`, expiry days, thesis); `closed` and `learnings` are deferred.
+
 ---
 
 ## 5. Caching Strategy

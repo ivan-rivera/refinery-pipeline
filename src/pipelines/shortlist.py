@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import click
 
+from src.config import get_settings
 from src.console import console
+from src.integrations.sheets import make_sheets_client
 
 
 @click.group()
@@ -20,7 +22,7 @@ def cli() -> None:
 @cli.command()
 @click.option("--input", "input_path", default=None, help="Input file path or URL.")
 @click.option("--output", "output_path", default=None, help="Output file path.")
-@click.option("--dry-run", is_flag=True, default=False, help="Log without applying side effects.")
+@click.option("--dry-run", is_flag=True, default=False, help="Log without applying side effects; uses the test sheet.")
 def run(input_path: str | None, output_path: str | None, dry_run: bool) -> None:
     """Execute the shortlist pipeline."""
     console.rule("[bold blue]refinery-pipeline shortlist[/bold blue]")
@@ -29,14 +31,12 @@ def run(input_path: str | None, output_path: str | None, dry_run: bool) -> None:
     console.print(f"  [dim]dry-run:[/dim] {dry_run}")
     console.print()
 
-    # Stub implementation - just print that shortlisting was triggered
+    settings = get_settings()
+    sheets = make_sheets_client(settings, debug=dry_run)
+
     console.print("[yellow]Shortlisting triggered[/yellow]")
     console.print("[dim]This is a stub implementation. Actual shortlisting logic will be added later.[/dim]")
-
-    if dry_run:
-        console.print("[yellow]Dry run — no side effects applied.[/yellow]")
-    elif output_path:
-        console.print(f"[green]Output destination:[/green] {output_path}")
+    _ = sheets
 
     console.rule("[bold blue]Done[/bold blue]")
 
