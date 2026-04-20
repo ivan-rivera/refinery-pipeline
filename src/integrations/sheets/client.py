@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import gspread
 from gspread.utils import ValueInputOption
 
-from src.schemas.sheets import HoldingsRow, UniverseRow
+from src.schemas.sheets import SheetRow
 
 if TYPE_CHECKING:
     from src.config import Settings
@@ -21,7 +21,7 @@ _HEADER_ROWS = 1
 _VALUE_INPUT = ValueInputOption.user_entered
 
 
-class _Tab[T: (UniverseRow, HoldingsRow)]:
+class _Tab[T: SheetRow]:
     """CRUD adapter over a single worksheet keyed by one column."""
 
     def __init__(self, worksheet: gspread.Worksheet, model: type[T]) -> None:
@@ -62,25 +62,25 @@ class SheetsClient:
         self._spreadsheet = gc.open_by_key(sheet_id)
         self._cache: dict[str, _Tab] = {}
 
-    def _tab[T: (UniverseRow, HoldingsRow)](self, model: type[T]) -> _Tab[T]:
+    def _tab[T: SheetRow](self, model: type[T]) -> _Tab[T]:
         if model.SHEET not in self._cache:
             ws = self._spreadsheet.worksheet(model.SHEET)
             self._cache[model.SHEET] = _Tab(ws, model)
         return self._cache[model.SHEET]
 
-    def get_table[T: (UniverseRow, HoldingsRow)](self, model: type[T]) -> list[T]:
+    def get_table[T: SheetRow](self, model: type[T]) -> list[T]:
         """Return every row from the sheet that corresponds to `model`."""
         return self._tab(model).read_all()
 
-    def append_row[T: (UniverseRow, HoldingsRow)](self, row: T) -> None:
+    def append_row[T: SheetRow](self, row: T) -> None:
         """Append a row to the sheet that corresponds to `row`'s model."""
         self._tab(type(row)).append(row)
 
-    def update_row[T: (UniverseRow, HoldingsRow)](self, key: str, row: T) -> None:
+    def update_row[T: SheetRow](self, key: str, row: T) -> None:
         """Replace the row identified by `key` in `row`'s sheet."""
         self._tab(type(row)).update(key, row)
 
-    def delete_row[T: (UniverseRow, HoldingsRow)](self, model: type[T], key: str) -> None:
+    def delete_row[T: SheetRow](self, model: type[T], key: str) -> None:
         """Delete the row identified by `key` from `model`'s sheet."""
         self._tab(model).delete(key)
 

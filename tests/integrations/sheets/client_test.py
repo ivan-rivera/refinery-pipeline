@@ -8,14 +8,14 @@ from typing import TYPE_CHECKING
 
 import pytest
 from src.integrations.sheets.client import SheetsClient, make_sheets_client
-from src.schemas.sheets import HoldingsRow, UniverseRow
+from src.schemas.sheets import Holding, UniverseEntry
 
 if TYPE_CHECKING:
     from pytest_mock import MockerFixture
 
 
-_UNIVERSE_HEADER = list(UniverseRow.HEADER)
-_HOLDINGS_HEADER = list(HoldingsRow.HEADER)
+_UNIVERSE_HEADER = list(UniverseEntry.HEADER)
+_HOLDINGS_HEADER = list(Holding.HEADER)
 
 
 def _make_client(
@@ -44,15 +44,15 @@ def test_get_table_universe(mocker: MockerFixture) -> None:
         universe=[["GDX", "Gold Miners"], ["NEM", "Newmont"]],
         holdings=[],
     )
-    assert client.get_table(UniverseRow) == [
-        UniverseRow(ticker="GDX", description="Gold Miners"),
-        UniverseRow(ticker="NEM", description="Newmont"),
+    assert client.get_table(UniverseEntry) == [
+        UniverseEntry(ticker="GDX", description="Gold Miners"),
+        UniverseEntry(ticker="NEM", description="Newmont"),
     ]
 
 
 def test_append_row_universe(mocker: MockerFixture) -> None:
     client, universe_ws, _ = _make_client(mocker, universe=[], holdings=[])
-    client.append_row(UniverseRow(ticker="GLD", description="Gold ETF"))
+    client.append_row(UniverseEntry(ticker="GLD", description="Gold ETF"))
     universe_ws.append_row.assert_called_once_with(["GLD", "Gold ETF"], value_input_option="USER_ENTERED")
 
 
@@ -62,8 +62,8 @@ def test_get_table_holdings(mocker: MockerFixture) -> None:
         universe=[],
         holdings=[["2026-04-19", "NEM", "52.10", "48.00", "60.00", "14", "thesis"]],
     )
-    assert client.get_table(HoldingsRow) == [
-        HoldingsRow(
+    assert client.get_table(Holding) == [
+        Holding(
             date=date(2026, 4, 19),
             ticker="NEM",
             entry_price=Decimal("52.10"),
@@ -77,7 +77,7 @@ def test_get_table_holdings(mocker: MockerFixture) -> None:
 
 def test_append_row_holdings(mocker: MockerFixture) -> None:
     client, _, holdings_ws = _make_client(mocker, universe=[], holdings=[])
-    row = HoldingsRow(
+    row = Holding(
         date=date(2026, 4, 19),
         ticker="GDX",
         entry_price=Decimal("32.0"),
@@ -102,7 +102,7 @@ def test_update_row_targets_correct_row(mocker: MockerFixture) -> None:
             ["2026-04-11", "NEM", "50.0", "48.0", "60.0", "14", "old"],
         ],
     )
-    new_row = HoldingsRow(
+    new_row = Holding(
         date=date(2026, 4, 19),
         ticker="NEM",
         entry_price=Decimal("52.0"),
@@ -128,13 +128,13 @@ def test_delete_row_removes_correct_row(mocker: MockerFixture) -> None:
             ["2026-04-11", "NEM", "50.0", "48.0", "60.0", "14", "t"],
         ],
     )
-    client.delete_row(HoldingsRow, "GDX")
+    client.delete_row(Holding, "GDX")
     holdings_ws.delete_rows.assert_called_once_with(2)
 
 
 def test_update_row_unknown_key_raises(mocker: MockerFixture) -> None:
     client, _, _ = _make_client(mocker, universe=[], holdings=[])
-    row = HoldingsRow(
+    row = Holding(
         date=date(2026, 4, 19),
         ticker="MISSING",
         entry_price=Decimal(1),

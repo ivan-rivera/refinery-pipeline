@@ -2,6 +2,9 @@
 
 Each model owns its column order via `HEADER` and serialises to/from the
 flat `list[str]` rows that `gspread` returns.
+
+`SheetRow` is the base class — adding a new sheet model only requires
+subclassing it; no changes to `SheetsClient` are needed.
 """
 
 from __future__ import annotations
@@ -15,7 +18,24 @@ from pydantic import BaseModel, Field
 _DATE_FORMAT = "%Y-%m-%d"
 
 
-class UniverseRow(BaseModel):
+class SheetRow(BaseModel):
+    """Base for all Google Sheets row models."""
+
+    SHEET: ClassVar[str]
+    KEY: ClassVar[str]
+    HEADER: ClassVar[tuple[str, ...]]
+
+    @classmethod
+    def from_row(cls, row: list[str]) -> Self:
+        """Build the model from a raw cell-value row."""
+        raise NotImplementedError
+
+    def to_row(self) -> list[str]:
+        """Serialise the model into the sheet's column order."""
+        raise NotImplementedError
+
+
+class UniverseEntry(SheetRow):
     """A row in the `universe` sheet."""
 
     SHEET: ClassVar[str] = "universe"
@@ -27,16 +47,14 @@ class UniverseRow(BaseModel):
 
     @classmethod
     def from_row(cls, row: list[str]) -> Self:
-        """Build the model from a raw cell-value row."""
         ticker, description = _padded(row, len(cls.HEADER))
         return cls(ticker=ticker, description=description)
 
     def to_row(self) -> list[str]:
-        """Serialise the model into the sheet's column order."""
         return [self.ticker, self.description]
 
 
-class HoldingsRow(BaseModel):
+class Holding(SheetRow):
     """A row in the `holdings` sheet (one open position per ticker)."""
 
     SHEET: ClassVar[str] = "holdings"
@@ -61,7 +79,6 @@ class HoldingsRow(BaseModel):
 
     @classmethod
     def from_row(cls, row: list[str]) -> Self:
-        """Build the model from a raw cell-value row."""
         d, ticker, entry, stop, take, expiry, thesis = _padded(row, len(cls.HEADER))
         return cls(
             date=datetime.strptime(d, _DATE_FORMAT).date(),  # noqa: DTZ007
@@ -74,7 +91,6 @@ class HoldingsRow(BaseModel):
         )
 
     def to_row(self) -> list[str]:
-        """Serialise the model into the sheet's column order."""
         return [
             self.date.strftime(_DATE_FORMAT),
             self.ticker,
