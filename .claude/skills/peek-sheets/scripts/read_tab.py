@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
+# ruff: noqa: T201
 """Read a single tab from the test Google Sheet and print it to stdout."""
 
 import os
 import sys
 
 import gspread
-
 
 _KNOWN_TABS = {"universe", "holdings", "closed", "learnings"}
 
