@@ -102,6 +102,84 @@ class Holding(SheetRow):
         ]
 
 
+class ClosedPosition(SheetRow):
+    """A row in the `closed` sheet (one closed position per ticker)."""
+
+    SHEET: ClassVar[str] = "closed"
+    KEY: ClassVar[str] = "ticker"
+    HEADER: ClassVar[tuple[str, ...]] = (
+        "date",
+        "ticker",
+        "entry_price",
+        "exit_price",
+        "stop_loss",
+        "take_profit",
+        "expiry_days",
+        "thesis",
+        "learnings",
+    )
+
+    date: date
+    ticker: str
+    entry_price: Decimal
+    exit_price: Decimal
+    stop_loss: Decimal
+    take_profit: Decimal
+    expiry_days: int = Field(ge=0)
+    thesis: str
+    learnings: str
+
+    @classmethod
+    def from_row(cls, row: list[str]) -> Self:
+        d, ticker, entry, exit_, stop, take, expiry, thesis, learnings = _padded(row, len(cls.HEADER))
+        return cls(
+            date=datetime.strptime(d, _DATE_FORMAT).date(),  # noqa: DTZ007
+            ticker=ticker,
+            entry_price=Decimal(entry),
+            exit_price=Decimal(exit_),
+            stop_loss=Decimal(stop),
+            take_profit=Decimal(take),
+            expiry_days=int(expiry),
+            thesis=thesis,
+            learnings=learnings,
+        )
+
+    def to_row(self) -> list[str]:
+        return [
+            self.date.strftime(_DATE_FORMAT),
+            self.ticker,
+            str(self.entry_price),
+            str(self.exit_price),
+            str(self.stop_loss),
+            str(self.take_profit),
+            str(self.expiry_days),
+            self.thesis,
+            self.learnings,
+        ]
+
+
+class Learning(SheetRow):
+    """A row in the `learnings` sheet."""
+
+    SHEET: ClassVar[str] = "learnings"
+    KEY: ClassVar[str] = "date"
+    HEADER: ClassVar[tuple[str, ...]] = ("date", "learning")
+
+    date: date
+    learning: str
+
+    @classmethod
+    def from_row(cls, row: list[str]) -> Self:
+        d, learning = _padded(row, len(cls.HEADER))
+        return cls(
+            date=datetime.strptime(d, _DATE_FORMAT).date(),  # noqa: DTZ007
+            learning=learning,
+        )
+
+    def to_row(self) -> list[str]:
+        return [self.date.strftime(_DATE_FORMAT), self.learning]
+
+
 def _padded(row: list[str], width: int) -> list[str]:
     """Right-pad with empty strings so unpacking never raises on short rows."""
     if len(row) >= width:
