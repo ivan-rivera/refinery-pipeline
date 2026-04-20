@@ -5,16 +5,16 @@ from decimal import Decimal
 
 import pytest
 from pydantic import ValidationError
-from src.schemas.sheets import HoldingsRow, UniverseRow
+from src.schemas.sheets import Holding, UniverseEntry
 
 
-def test_universe_row_round_trip() -> None:
-    row = UniverseRow(ticker="GDX", description="VanEck Gold Miners ETF")
-    assert UniverseRow.from_row(row.to_row()) == row
+def test_universe_entry_round_trip() -> None:
+    row = UniverseEntry(ticker="GDX", description="VanEck Gold Miners ETF")
+    assert UniverseEntry.from_row(row.to_row()) == row
 
 
-def test_holdings_row_round_trip() -> None:
-    row = HoldingsRow(
+def test_holding_round_trip() -> None:
+    row = Holding(
         date=date(2026, 4, 19),
         ticker="NEM",
         entry_price=Decimal("52.10"),
@@ -23,12 +23,12 @@ def test_holdings_row_round_trip() -> None:
         expiry_days=14,
         thesis="Gold breakout above 2400.",
     )
-    assert HoldingsRow.from_row(row.to_row()) == row
+    assert Holding.from_row(row.to_row()) == row
 
 
-def test_holdings_row_rejects_negative_expiry() -> None:
+def test_holding_rejects_negative_expiry() -> None:
     with pytest.raises(ValidationError):
-        HoldingsRow(
+        Holding(
             date=date(2026, 4, 19),
             ticker="NEM",
             entry_price=Decimal("52.10"),
@@ -40,5 +40,5 @@ def test_holdings_row_rejects_negative_expiry() -> None:
 
 
 def test_from_row_pads_short_rows() -> None:
-    row = UniverseRow.from_row(["GDX"])
-    assert row == UniverseRow(ticker="GDX", description="")
+    row = UniverseEntry.from_row(["GDX"])
+    assert row == UniverseEntry(ticker="GDX", description="")

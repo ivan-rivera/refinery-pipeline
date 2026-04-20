@@ -29,11 +29,10 @@ def run(input_path: str | None, output_path: str | None, dry_run: bool) -> None:
     console.print()
 
     settings = get_settings()
-    sheets = make_sheets_client(settings, debug=dry_run)
+    _sheets = make_sheets_client(settings, debug=dry_run)
 
     filtered_data = apply_filter(None)
     apply_transform(filtered_data)
-    _ = sheets
 
     console.rule("[bold green]Done[/bold green]")
 

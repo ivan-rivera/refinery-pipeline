@@ -34,3 +34,6 @@ data/*.sqlite3
 
 # Specstory
 .specstory/
+
+# Claude Code session memory
+.remember/
