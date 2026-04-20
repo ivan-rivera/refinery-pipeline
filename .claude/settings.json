@@ -1,1 +1,18 @@
-{}
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git commit *)",
+            "command": "output=$(just lint 2>&1); if [ $? -ne 0 ]; then jq -n --arg reason \"$(printf 'Lint check failed. Fix these issues before committing:\\n%s' \"$output\")\" '{\"continue\": false, \"stopReason\": $reason}'; fi",
+            "timeout": 120,
+            "statusMessage": "Running lint checks..."
+          }
+        ]
+      }
+    ]
+  }
+}
