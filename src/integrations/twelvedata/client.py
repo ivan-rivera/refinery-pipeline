@@ -40,15 +40,12 @@ class TwelveDataClient:
         results: dict[str, pd.DataFrame] = {}
         for symbol in symbols:
             try:
-                df: pd.DataFrame = (
-                    self._td.time_series(
-                        symbol=symbol,
-                        interval=interval,
-                        outputsize=outputsize,
-                        adjust="splits",
-                    )
-                    .as_pandas()
-                )
+                df: pd.DataFrame = self._td.time_series(
+                    symbol=symbol,
+                    interval=interval,
+                    outputsize=outputsize,
+                    adjust="splits",
+                ).as_pandas()
             except Exception:
                 _logger.warning("Failed to fetch OHLCV for %s", symbol, exc_info=True)
                 continue
