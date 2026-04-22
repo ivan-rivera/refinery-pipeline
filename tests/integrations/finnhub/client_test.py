@@ -96,6 +96,7 @@ def test_integration_get_company_news():
     today = datetime.now(tz=UTC).date()
     result = make_finnhub_client(get_settings()).get_company_news("GDX", today - timedelta(days=7), today)
     assert isinstance(result, list)
+    assert all(isinstance(a.published_at, datetime) for a in result)
 
 
 @pytest.mark.integration
