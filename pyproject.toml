@@ -12,6 +12,8 @@ dependencies = [
     "pydantic-settings>=2.13.0",
     "gspread>=6.1.0",
     "google-auth>=2.35.0",
+    "twelvedata>=1.2.0",
+    "pandas>=2.2.0",
 ]
 
 [project.scripts]
@@ -115,6 +117,10 @@ disable_error_code = ["type-arg", "no-any-return"]
 [[tool.mypy.overrides]]
 module = ["tests.*"]
 ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["twelvedata.*", "pandas.*"]
+ignore_missing_imports = true
 
 [tool.commitizen]
 name = "cz_conventional_commits"
