@@ -19,19 +19,19 @@ class AlpacaClient:
         self._client = client
 
     def get_account(self) -> TradeAccount:
-        return self._client.get_account()  # type: ignore[return-value]
+        return self._client.get_account()
 
     def get_all_positions(self) -> list[Position]:
-        return self._client.get_all_positions()  # type: ignore[return-value]
+        return self._client.get_all_positions()
 
     def get_open_position(self, symbol: str) -> Position:
-        return self._client.get_open_position(symbol)  # type: ignore[return-value]
+        return self._client.get_open_position(symbol)
 
     def close_position(self, symbol: str) -> ClosePositionResponse:
-        return self._client.close_position(symbol)  # type: ignore[return-value]
+        return self._client.close_position(symbol)
 
     def submit_order(self, order_data: OrderRequest) -> Order:
-        return self._client.submit_order(order_data)  # type: ignore[return-value]
+        return self._client.submit_order(order_data)
 
 
 def make_alpaca_client(settings: Settings, *, debug: bool) -> AlpacaClient:
