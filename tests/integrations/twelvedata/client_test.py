@@ -62,6 +62,16 @@ def test_get_ohlcv_skips_symbol_on_error(mocker: MockerFixture) -> None:
     assert "INVALID" not in result
 
 
+def test_get_ohlcv_skips_symbol_on_empty_dataframe(mocker: MockerFixture) -> None:
+    mock_td = mocker.patch("src.integrations.twelvedata.client.TDClient")
+    mock_td.return_value.time_series.return_value.as_pandas.return_value = pd.DataFrame()
+
+    client = TwelveDataClient("test-key")
+    result = client.get_ohlcv(["GDX"])
+
+    assert result == {}
+
+
 def test_make_twelvedata_client_raises_for_missing_key() -> None:
     settings = Settings(_env_file=None)
     with pytest.raises(ValueError, match="TWELVEDATA_API_KEY"):
