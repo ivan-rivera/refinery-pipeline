@@ -29,13 +29,13 @@ class FinnhubClient:
         if not data or not data.get("ticker"):
             return None
         return CompanyProfile(
-            symbol=data.get("ticker", symbol),
+            symbol=data["ticker"],
             name=data.get("name", ""),
             exchange=data.get("exchange", ""),
             sector=data.get("gicsSector", ""),
             industry=data.get("finnhubIndustry", ""),
             country=data.get("country", ""),
-            market_cap=data.get("marketCapitalization") or None,
+            market_cap=data.get("marketCapitalization"),
         )
 
     def get_company_news(self, symbol: str, from_date: date, to_date: date) -> list[NewsArticle]:
@@ -66,10 +66,10 @@ class FinnhubClient:
         metric = data["metric"]
         return BasicFinancials(
             symbol=symbol,
-            week_52_high=metric.get("52WeekHigh") or None,
-            week_52_low=metric.get("52WeekLow") or None,
-            beta=metric.get("beta") or None,
-            avg_vol_10d=metric.get("10DayAverageTradingVolume") or None,
+            week_52_high=metric.get("52WeekHigh"),
+            week_52_low=metric.get("52WeekLow"),
+            beta=metric.get("beta"),
+            avg_vol_10d=metric.get("10DayAverageTradingVolume"),
         )
 
     def search_symbols(self, query: str) -> list[SymbolMatch]:

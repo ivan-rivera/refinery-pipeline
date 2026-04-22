@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 import pytest
-
 from src.integrations.finnhub import FinnhubClient, make_finnhub_client
 
 
@@ -34,7 +33,7 @@ def test_get_company_news_converts_unix_timestamp(mocker):
     ]
     articles = FinnhubClient(sdk).get_company_news("GDX", date(2023, 11, 1), date(2023, 11, 30))
     assert len(articles) == 1
-    assert articles[0].published_at == datetime.fromtimestamp(1700000000, tz=timezone.utc)
+    assert articles[0].published_at == datetime.fromtimestamp(1700000000, tz=UTC)
 
 
 def test_get_basic_financials_handles_missing_metrics(mocker):
@@ -45,3 +44,30 @@ def test_get_basic_financials_handles_missing_metrics(mocker):
     assert result.week_52_high == 35.0
     assert result.beta is None
     assert result.avg_vol_10d is None
+
+
+def test_get_company_profile_maps_fields(mocker):
+    sdk = mocker.MagicMock()
+    sdk.company_profile2.return_value = {
+        "ticker": "GDX",
+        "name": "VanEck Gold Miners ETF",
+        "exchange": "NYSE ARCA",
+        "gicsSector": "Materials",
+        "finnhubIndustry": "Gold",
+        "country": "US",
+        "marketCapitalization": 0.0,
+    }
+    profile = FinnhubClient(sdk).get_company_profile("GDX")
+    assert profile is not None
+    assert profile.symbol == "GDX"
+    assert profile.market_cap == 0.0
+
+
+def test_get_basic_financials_preserves_zero_values(mocker):
+    sdk = mocker.MagicMock()
+    sdk.company_basic_financials.return_value = {"metric": {"52WeekHigh": 0.0, "beta": 0, "52WeekLow": None}}
+    result = FinnhubClient(sdk).get_basic_financials("GDX")
+    assert result is not None
+    assert result.week_52_high == 0.0
+    assert result.beta == 0
+    assert result.week_52_low is None
