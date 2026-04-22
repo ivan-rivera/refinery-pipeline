@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
-
-from pydantic import BaseModel
+from pydantic import AwareDatetime, BaseModel
 
 
 class CompanyProfile(BaseModel):
@@ -18,7 +16,7 @@ class CompanyProfile(BaseModel):
 
 
 class NewsArticle(BaseModel):
-    published_at: datetime
+    published_at: AwareDatetime
     headline: str = ""
     summary: str = ""
     source: str = ""
