@@ -371,6 +371,18 @@ wheels = [
 ]
 
 [[package]]
+name = "finnhub-python"
+version = "2.4.28"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7e/df/71b9abeef0490dbd8c77d996f6d34bce976eb7a270a12ea421a2a4f42746/finnhub_python-2.4.28.tar.gz", hash = "sha256:fac2850f0c152eea7c66eede7ba182ac73da1307c5b409a5f244c50d12622973", size = 13681, upload-time = "2026-04-22T07:16:56.102Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/09/b1/e5148acb6d99ecc850e60f25b4a71bc1ee49cf80db4c94d61fe15505fcc4/finnhub_python-2.4.28-py3-none-any.whl", hash = "sha256:64ae25a9fc25149d3399aefa5491cb43bdeb9ee1997a99e3abeea7d31c73cf7a", size = 12063, upload-time = "2026-04-22T07:16:54.882Z" },
+]
+
+[[package]]
 name = "google-auth"
 version = "2.49.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1100,6 +1112,7 @@ source = { editable = "." }
 dependencies = [
     { name = "alpaca-py" },
     { name = "click" },
+    { name = "finnhub-python" },
     { name = "google-auth" },
     { name = "gspread" },
     { name = "pandas" },
@@ -1130,6 +1143,7 @@ test = [
 requires-dist = [
     { name = "alpaca-py", specifier = ">=0.38.0" },
     { name = "click", specifier = ">=8.1.0" },
+    { name = "finnhub-python", specifier = ">=2.4.0" },
     { name = "google-auth", specifier = ">=2.35.0" },
     { name = "gspread", specifier = ">=6.1.0" },
     { name = "pandas", specifier = ">=2.2.0" },
