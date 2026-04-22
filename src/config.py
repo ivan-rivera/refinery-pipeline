@@ -30,6 +30,7 @@ class Settings(BaseSettings):
     google_creds_path: Path | None = Field(default=None, alias="GOOGLE_CREDS_PATH")
     google_sheet_id_test: str = Field(default="", alias="GOOGLE_SHEET_ID_TEST")
     google_sheet_id_prod: str = Field(default="", alias="GOOGLE_SHEET_ID_PROD")
+    twelvedata_api_key: str = Field(default="", alias="TWELVEDATA_API_KEY")
 
     def sheet_id(self, *, debug: bool) -> str:
         """Return the Google Sheet id for the current environment."""
