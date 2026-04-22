@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
+import os
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
+from src.config import get_settings
 from src.integrations.finnhub import FinnhubClient, make_finnhub_client
 
 
@@ -71,3 +73,40 @@ def test_get_basic_financials_preserves_zero_values(mocker):
     assert result.week_52_high == 0.0
     assert result.beta == 0
     assert result.week_52_low is None
+
+
+# ---------------------------------------------------------------------------
+# Integration tests — skipped unless FINNHUB_API_KEY is set in the environment
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(not os.getenv("FINNHUB_API_KEY"), reason="FINNHUB_API_KEY not set")
+def test_integration_get_company_profile():
+    # Use GOLD (Barrick Gold Corp) — a regular equity with reliable Finnhub coverage.
+    # GDX is an ETF and returns an empty profile on the free tier.
+    result = make_finnhub_client(get_settings()).get_company_profile("GOLD")
+    assert result is not None
+    assert result.symbol != ""
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(not os.getenv("FINNHUB_API_KEY"), reason="FINNHUB_API_KEY not set")
+def test_integration_get_company_news():
+    today = datetime.now(tz=UTC).date()
+    result = make_finnhub_client(get_settings()).get_company_news("GDX", today - timedelta(days=7), today)
+    assert isinstance(result, list)
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(not os.getenv("FINNHUB_API_KEY"), reason="FINNHUB_API_KEY not set")
+def test_integration_get_basic_financials():
+    result = make_finnhub_client(get_settings()).get_basic_financials("GDX")
+    assert result is not None
+
+
+@pytest.mark.integration
+@pytest.mark.skipif(not os.getenv("FINNHUB_API_KEY"), reason="FINNHUB_API_KEY not set")
+def test_integration_search_symbols():
+    results = make_finnhub_client(get_settings()).search_symbols("gold")
+    assert len(results) > 0

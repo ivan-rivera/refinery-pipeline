@@ -74,7 +74,7 @@ class FinnhubClient:
 
     def search_symbols(self, query: str) -> list[SymbolMatch]:
         """Search for symbols matching `query`."""
-        data = self._client.symbol_search(query)
+        data = self._client.symbol_lookup(query)
         if not data or not data.get("result"):
             return []
         return [
