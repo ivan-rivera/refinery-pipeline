@@ -1037,6 +1037,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pytimeparse"
+version = "1.1.8"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/37/5d/231f5f33c81e09682708fb323f9e4041408d8223e2f0fb9742843328778f/pytimeparse-1.1.8.tar.gz", hash = "sha256:e86136477be924d7e670646a98561957e8ca7308d44841e21f5ddea757556a0a", size = 9403, upload-time = "2018-05-18T17:40:42.76Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1b/b4/afd75551a3b910abd1d922dbd45e49e5deeb4d47dc50209ce489ba9844dd/pytimeparse-1.1.8-py2.py3-none-any.whl", hash = "sha256:04b7be6cc8bd9f5647a6325444926c3ac34ee6bc7e69da4367ba282f076036bd", size = 9969, upload-time = "2018-05-18T17:40:41.28Z" },
+]
+
+[[package]]
 name = "pyyaml"
 version = "6.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1093,8 +1102,10 @@ dependencies = [
     { name = "click" },
     { name = "google-auth" },
     { name = "gspread" },
+    { name = "pandas" },
     { name = "pydantic-settings" },
     { name = "rich" },
+    { name = "twelvedata" },
 ]
 
 [package.dev-dependencies]
@@ -1121,8 +1132,10 @@ requires-dist = [
     { name = "click", specifier = ">=8.1.0" },
     { name = "google-auth", specifier = ">=2.35.0" },
     { name = "gspread", specifier = ">=6.1.0" },
+    { name = "pandas", specifier = ">=2.2.0" },
     { name = "pydantic-settings", specifier = ">=2.13.0" },
     { name = "rich", specifier = ">=14.0.0" },
+    { name = "twelvedata", specifier = ">=1.2.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -1251,6 +1264,19 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/c3/af/14b24e41977adb296d6bd1fb59402cf7d60ce364f90c890bd2ec65c43b5a/tomlkit-0.14.0.tar.gz", hash = "sha256:cf00efca415dbd57575befb1f6634c4f42d2d87dbba376128adb42c121b87064", size = 187167, upload-time = "2026-01-13T01:14:53.304Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b5/11/87d6d29fb5d237229d67973a6c9e06e048f01cf4994dee194ab0ea841814/tomlkit-0.14.0-py3-none-any.whl", hash = "sha256:592064ed85b40fa213469f81ac584f67a4f2992509a7c3ea2d632208623a3680", size = 39310, upload-time = "2026-01-13T01:14:51.965Z" },
+]
+
+[[package]]
+name = "twelvedata"
+version = "1.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytimeparse" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d1/e0/555e2bc7c99421f17a70604d1c50f769472bdc52df332bba91b72faab8a6/twelvedata-1.3.0.tar.gz", hash = "sha256:3a9071198ea9e335127d2cc6d33c65954c5458796691d45dd44442d960fb772f", size = 13064545, upload-time = "2026-04-17T15:38:24.484Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ec/d2/5d6c1e84e48911cefbfc0277323bf45770a2042d18552198a5fa67a22f49/twelvedata-1.3.0-py3-none-any.whl", hash = "sha256:2c9eeff4e417d7c42ef82db7ae2a6900aab2c85a204f26598dee905ab54da8de", size = 56082, upload-time = "2026-04-17T15:38:21.652Z" },
 ]
 
 [[package]]
