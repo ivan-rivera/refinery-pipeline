@@ -1,6 +1,6 @@
 [project]
 name = "refinery-pipeline"
-version = "0.3.0"
+version = "0.4.0"
 description = "Autonomous precious metal swing trading bot"
 requires-python = ">=3.13"
 authors = [
@@ -14,6 +14,7 @@ dependencies = [
     "google-auth>=2.35.0",
     "twelvedata>=1.2.0",
     "pandas>=2.2.0",
+    "alpaca-py>=0.38.0",
 ]
 
 [project.scripts]
@@ -88,7 +89,7 @@ select = [
 ignore = ["E501", "S101", "PLR2004", "TRY003", "PLR0913", "PGH003", "COM812"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["ARG"]
+"tests/**/*.py" = ["ARG", "S106"]
 "src/components/*/__init__.py" = ["A001"]  # component orchestrators intentionally shadow builtins (e.g. filter)
 
 [tool.ruff.lint.isort]
@@ -121,6 +122,9 @@ ignore_errors = true
 [[tool.mypy.overrides]]
 module = ["twelvedata.*", "pandas.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["alpaca.*"]
 
 [tool.commitizen]
 name = "cz_conventional_commits"

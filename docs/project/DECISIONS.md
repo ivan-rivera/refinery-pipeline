@@ -61,3 +61,25 @@ ADR-002 commits the project to Google Sheets as the storage layer. The pipeline 
 #### Alternatives Considered
 - **OAuth Desktop client** with a stored refresh token: requires a one-time interactive consent and persistent token cache, awkward for headless/scheduled runs.
 - **`google-api-python-client` directly**: more boilerplate for what is essentially row-level CRUD; we would re-implement the wrapper that `gspread` already provides.
+
+### ADR-004: Alpaca client scope, wrapper style, and paper/live switching
+
+**Date:** 2026-04-22
+**Status:** Accepted
+
+#### Context
+Alpaca is the execution platform. The architecture also lists it as a potential market data source alongside Finnhub and TwelveData. A decision was needed on (a) what responsibilities belong to the Alpaca client, (b) how much abstraction to place over the SDK, and (c) how to switch between paper and live accounts.
+
+#### Decision
+- **Scope:** `AlpacaClient` handles execution and portfolio management only (`get_account`, `get_all_positions`, `get_open_position`, `close_position`, `submit_order`). All price and volume data comes from Finnhub and TwelveData — Alpaca is not used as a data source.
+- **Wrapper style:** Thin delegation wrapper — alpaca-py's `TradingClient` is wrapped with no translation layer. SDK types (`TradeAccount`, `Position`, `Order`, etc.) are intentionally allowed to leak into the trade execution component. That component is small and Alpaca-specific; adding a domain translation layer would be overhead without benefit at this scale.
+- **Paper vs live:** Determined entirely by which API keys are configured in the environment. The codebase has no `paper=True/False` flag. `ALPACA_BASE_URL` selects the API endpoint; swapping PROD keys and updating the URL is sufficient to go live — zero code changes required.
+
+#### Consequences
+- Finnhub/TwelveData remain the sole sources of OHLCV, volume, and technical indicator data; Alpaca data capabilities are unused for now.
+- The trade execution component is the only part of the codebase that imports from `alpaca.*`; the research and scoring pipeline is fully isolated from the SDK.
+- Going live requires only an environment change, not a code change.
+
+#### Alternatives Considered
+- **Domain-typed facade:** Translate all alpaca-py return types into project-owned Pydantic models. Rejected as over-engineering — the execution component is small and the SDK types are stable.
+- **Alpaca as a market data source:** Alpaca provides historical bars and snapshots. Rejected for the initial integration to keep the client scope tight; can be added later if Finnhub/TwelveData prove insufficient.

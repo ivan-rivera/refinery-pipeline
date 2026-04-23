@@ -32,9 +32,21 @@ class Settings(BaseSettings):
     google_sheet_id_prod: str = Field(default="", alias="GOOGLE_SHEET_ID_PROD")
     twelvedata_api_key: str = Field(default="", alias="TWELVEDATA_API_KEY")
 
+    alpaca_api_key_test: str = Field(default="", alias="TEST_ALPACA_API_KEY")
+    alpaca_secret_key_test: str = Field(default="", alias="TEST_ALPACA_SECRET_KEY")
+    alpaca_api_key_prod: str = Field(default="", alias="PROD_ALPACA_API_KEY")
+    alpaca_secret_key_prod: str = Field(default="", alias="PROD_ALPACA_SECRET_KEY")
+    alpaca_base_url: str = Field(default="https://paper-api.alpaca.markets", alias="ALPACA_BASE_URL")
+
     def sheet_id(self, *, debug: bool) -> str:
         """Return the Google Sheet id for the current environment."""
         return self.google_sheet_id_test if debug else self.google_sheet_id_prod
+
+    def alpaca_credentials(self, *, debug: bool) -> tuple[str, str]:
+        """Return (api_key, secret_key) for the active environment."""
+        if debug:
+            return self.alpaca_api_key_test, self.alpaca_secret_key_test
+        return self.alpaca_api_key_prod, self.alpaca_secret_key_prod
 
 
 @lru_cache

@@ -27,3 +27,13 @@ def test_twelvedata_api_key_loaded_from_env() -> None:
 def test_twelvedata_api_key_defaults_to_empty() -> None:
     settings = Settings(_env_file=None)
     assert settings.twelvedata_api_key == ""
+
+
+def test_alpaca_credentials_returns_test_keys_in_debug() -> None:
+    settings = Settings(_env_file=None, TEST_ALPACA_API_KEY="tkey", TEST_ALPACA_SECRET_KEY="tsecret")
+    assert settings.alpaca_credentials(debug=True) == ("tkey", "tsecret")
+
+
+def test_alpaca_credentials_returns_prod_keys_when_not_debug() -> None:
+    settings = Settings(_env_file=None, PROD_ALPACA_API_KEY="pkey", PROD_ALPACA_SECRET_KEY="psecret")
+    assert settings.alpaca_credentials(debug=False) == ("pkey", "psecret")
