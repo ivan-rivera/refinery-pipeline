@@ -125,6 +125,7 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["alpaca.*"]
+ignore_missing_imports = true
 
 [tool.commitizen]
 name = "cz_conventional_commits"
