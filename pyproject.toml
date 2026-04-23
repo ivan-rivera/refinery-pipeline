@@ -12,6 +12,7 @@ dependencies = [
     "pydantic-settings>=2.13.0",
     "gspread>=6.1.0",
     "google-auth>=2.35.0",
+    "alpaca-py>=0.38.0",
 ]
 
 [project.scripts]
@@ -86,7 +87,7 @@ select = [
 ignore = ["E501", "S101", "PLR2004", "TRY003", "PLR0913", "PGH003", "COM812"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["ARG"]
+"tests/**/*.py" = ["ARG", "S106"]
 "src/components/*/__init__.py" = ["A001"]  # component orchestrators intentionally shadow builtins (e.g. filter)
 
 [tool.ruff.lint.isort]
@@ -115,6 +116,10 @@ disable_error_code = ["type-arg", "no-any-return"]
 [[tool.mypy.overrides]]
 module = ["tests.*"]
 ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["alpaca.*"]
+ignore_missing_imports = true
 
 [tool.commitizen]
 name = "cz_conventional_commits"
