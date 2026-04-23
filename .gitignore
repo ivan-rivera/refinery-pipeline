@@ -37,3 +37,4 @@ data/*.sqlite3
 
 # Claude Code session memory
 .remember/
+docs/superpowers/
