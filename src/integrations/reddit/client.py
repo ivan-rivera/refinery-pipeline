@@ -44,15 +44,9 @@ class RedditClient:
     def get_hot_threads(self, subreddit: str, *, limit: int = REDDIT_MAX_THREADS) -> list[Thread]:
         """Return the top `limit` hot threads from `subreddit`, without comments."""
         data = self._get(f"/r/{subreddit}/hot.json", limit=limit)
-        return [
-            self._parse_post(child["data"])
-            for child in data["data"]["children"]
-            if child["kind"] == "t3"
-        ]
+        return [self._parse_post(child["data"]) for child in data["data"]["children"] if child["kind"] == "t3"]
 
-    def get_thread_comments(
-        self, subreddit: str, post_id: str, *, limit: int = REDDIT_MAX_COMMENTS
-    ) -> Thread:
+    def get_thread_comments(self, subreddit: str, post_id: str, *, limit: int = REDDIT_MAX_COMMENTS) -> Thread:
         """Return a thread with its top `limit` comments (up to 1 level of replies)."""
         data = self._get(
             f"/r/{subreddit}/comments/{post_id}.json",
@@ -61,14 +55,9 @@ class RedditClient:
         )
         thread = self._parse_post(data[0]["data"]["children"][0]["data"])
         raw_comments = [
-            self._parse_comment(child["data"])
-            for child in data[1]["data"]["children"]
-            if child["kind"] == "t1"
+            self._parse_comment(child["data"]) for child in data[1]["data"]["children"] if child["kind"] == "t1"
         ]
-        filtered = [
-            c for c in raw_comments
-            if c.score > 0 and c.body not in {"[removed]", "[deleted]"}
-        ]
+        filtered = [c for c in raw_comments if c.score > 0 and c.body not in {"[removed]", "[deleted]"}]
         return thread.model_copy(update={"top_comments": filtered[:limit]})
 
     def _parse_post(self, data: dict[str, Any]) -> Thread:
@@ -87,7 +76,7 @@ class RedditClient:
         )
 
     def _parse_comment(self, data: dict[str, Any]) -> Comment:
-        body = data.get("body", "")
+        body = data.get("body", "") or ""
         if len(body) > REDDIT_MAX_COMMENT_CHARS:
             body = body[:REDDIT_MAX_COMMENT_CHARS] + "..."
         replies: list[Comment] = []
@@ -97,7 +86,7 @@ class RedditClient:
                 if child.get("kind") != "t1":
                     continue
                 rd = child["data"]
-                rb = rd.get("body", "")
+                rb = rd.get("body", "") or ""
                 if rb in {"[removed]", "[deleted]"} or rd.get("score", 0) <= 0:
                     continue
                 if len(rb) > REDDIT_MAX_COMMENT_CHARS:

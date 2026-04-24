@@ -6,9 +6,8 @@ import time
 
 import pytest
 import requests
-
 from src.integrations.reddit import RedditClient, make_reddit_client
-from src.schemas.reddit import Comment, Thread
+from src.schemas.reddit import Thread
 
 
 def _hot_response(posts: list[dict]) -> dict:
@@ -169,8 +168,8 @@ def test_throttle_sleeps_when_within_one_second(mocker):
     session = mocker.MagicMock(spec=requests.Session)
     sleep_mock = mocker.patch("src.integrations.reddit.client.time.sleep")
     client = RedditClient(session)
-    client._last_request_at = time.monotonic()  # simulate a request just happened
-    client._throttle()
+    client._last_request_at = time.monotonic()  # noqa: SLF001 # simulate a request just happened
+    client._throttle()  # noqa: SLF001
     sleep_mock.assert_called_once()
     sleep_arg = sleep_mock.call_args[0][0]
     assert 0 < sleep_arg <= 1.0
@@ -180,14 +179,14 @@ def test_throttle_does_not_sleep_after_one_second(mocker):
     session = mocker.MagicMock(spec=requests.Session)
     sleep_mock = mocker.patch("src.integrations.reddit.client.time.sleep")
     client = RedditClient(session)
-    client._last_request_at = time.monotonic() - 2.0  # last request was 2s ago
-    client._throttle()
+    client._last_request_at = time.monotonic() - 2.0  # noqa: SLF001 # last request was 2s ago
+    client._throttle()  # noqa: SLF001
     sleep_mock.assert_not_called()
 
 
 def test_make_reddit_client_sets_user_agent():
     client = make_reddit_client()
-    assert "refinery-pipeline" in client._session.headers["User-Agent"]
+    assert "refinery-pipeline" in client._session.headers["User-Agent"]  # noqa: SLF001
 
 
 # ---------------------------------------------------------------------------
