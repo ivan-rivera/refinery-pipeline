@@ -83,3 +83,30 @@ Alpaca is the execution platform. The architecture also lists it as a potential 
 #### Alternatives Considered
 - **Domain-typed facade:** Translate all alpaca-py return types into project-owned Pydantic models. Rejected as over-engineering — the execution component is small and the SDK types are stable.
 - **Alpaca as a market data source:** Alpaca provides historical bars and snapshots. Rejected for the initial integration to keep the client scope tight; can be added later if Finnhub/TwelveData prove insufficient.
+
+### ADR-005: Reddit JSON API for social sentiment — unauthenticated, 2-level comment model
+
+**Date:** 2026-04-24
+**Status:** Accepted
+
+#### Context
+Stage 3 deep research (architecture 3.7) requires social sentiment signals. Reddit is a primary venue for retail precious metals sentiment (r/wallstreetsilver, r/goldsilver, r/mining, r/investing). The data must be consumable by LLM agents without overwhelming context windows.
+
+#### Decision
+- Use Reddit's public JSON API (`reddit.com/r/{sub}/hot.json`, `reddit.com/r/{sub}/comments/{id}.json`) — no authentication required.
+- Throttle to **1 request per second** using an elapsed-time check (`time.monotonic()`) before each HTTP call.
+- Comment representation: **2-level selective flat structure** — top-level comments by score plus their single best reply. Going deeper than 2 levels adds user-to-user noise without incremental sentiment signal for this use case.
+- `Thread.to_text()` serialises a thread as indented plain text (not JSON) for direct injection into LLM agent context.
+- Filter out `[removed]`/`[deleted]` bodies and comments with `score <= 0`.
+- Truncate comment bodies to 300 chars, post bodies to 500 chars, to bound context window usage.
+- `make_reddit_client()` accepts no settings argument — no API key, no environment coupling.
+
+#### Consequences
+- The Reddit JSON API has no official SLA; it may change without notice or begin requiring auth.
+- The 1 req/s throttle means fetching 5 threads costs at minimum 6 seconds (1 for listing + 5 for comments). This is acceptable for a daily pipeline.
+- Subreddit selection is a constant (`PRECIOUS_METALS_SUBREDDITS`) — easy to extend.
+
+#### Alternatives Considered
+- **PRAW (Python Reddit API Wrapper):** Requires OAuth app registration and credentials. Adds a dependency. The JSON API covers our read-only use case with zero setup.
+- **Full comment tree (unlimited depth):** Maximises context but produces very large payloads. Rejected — 2 levels captures dominant opinion and top pushback, which is sufficient for sentiment inference.
+- **Top-level comments only:** Simpler, but loses the pushback signal entirely. A strong contrarian reply to the top comment is a meaningful sentiment data point.
