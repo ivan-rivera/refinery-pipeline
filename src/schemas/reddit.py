@@ -26,9 +26,7 @@ class Thread(BaseModel):
 
     def to_text(self) -> str:
         """Render thread as indented plain text for LLM agent context."""
-        lines: list[str] = [
-            f"r/{self.subreddit} — {self.title!r} (score: {self.score}, {self.num_comments} comments)"
-        ]
+        lines: list[str] = [f"r/{self.subreddit} — {self.title!r} (score: {self.score}, {self.num_comments} comments)"]
         if self.body:
             lines += ["", self.body, ""]
         for comment in self.top_comments:
