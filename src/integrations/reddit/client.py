@@ -1,7 +1,7 @@
 """Unauthenticated Reddit JSON API client.
 
 Uses the public JSON endpoints (no OAuth required).
-Throttled to 1 request/second per Reddit's rate-limit guidance.
+Throttled to REDDIT_THROTTLE_SECONDS per request (default 1s) per Reddit's rate-limit guidance.
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ from src.constants import (
     REDDIT_MAX_COMMENT_CHARS,
     REDDIT_MAX_COMMENTS,
     REDDIT_MAX_THREADS,
+    REDDIT_THROTTLE_SECONDS,
     REDDIT_USER_AGENT,
 )
 from src.schemas.reddit import Comment, Thread
@@ -31,8 +32,8 @@ class RedditClient:
 
     def _throttle(self) -> None:
         elapsed = time.monotonic() - self._last_request_at
-        if elapsed < 1.0:
-            time.sleep(1.0 - elapsed)
+        if elapsed < REDDIT_THROTTLE_SECONDS:
+            time.sleep(REDDIT_THROTTLE_SECONDS - elapsed)
         self._last_request_at = time.monotonic()
 
     def _get(self, path: str, **params: Any) -> Any:
