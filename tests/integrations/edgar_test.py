@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from datetime import date
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
@@ -255,3 +257,186 @@ def test_make_edgar_client_raises_when_identity_empty(mocker: MockerFixture) -> 
 
     with pytest.raises(ValueError, match="EDGAR_IDENTITY"):
         make_edgar_client(settings)
+
+
+# ---------------------------------------------------------------------------
+# get_material_events
+# ---------------------------------------------------------------------------
+
+
+def test_get_material_events_returns_recent_events(mocker: MockerFixture) -> None:
+    from datetime import timedelta
+
+    today = date.today()
+    mock_filing = mocker.MagicMock()
+    mock_filing.filing_date = today - timedelta(days=5)
+    mock_filing.parsed_items = "2.02, 5.02"
+    mock_filing.url = "https://www.sec.gov/Archives/edgar/data/123/form8k.htm"
+
+    mock_company = mocker.MagicMock()
+    mock_company.get_filings.return_value = [mock_filing]
+    mocker.patch("src.integrations.edgar.client.Company", return_value=mock_company)
+
+    events = EdgarClient().get_material_events("GOLD", days=30)
+
+    assert len(events) == 1
+    assert events[0].item_codes == ["2.02", "5.02"]
+    assert events[0].description == "Earnings Release, Officer/Director Change"
+    assert "sec.gov" in events[0].url
+
+
+def test_get_material_events_handles_empty_items(mocker: MockerFixture) -> None:
+    from datetime import timedelta
+
+    today = date.today()
+    mock_filing = mocker.MagicMock()
+    mock_filing.filing_date = today - timedelta(days=2)
+    mock_filing.parsed_items = ""
+    mock_filing.url = "https://www.sec.gov/Archives/edgar/data/123/form8k.htm"
+
+    mock_company = mocker.MagicMock()
+    mock_company.get_filings.return_value = [mock_filing]
+    mocker.patch("src.integrations.edgar.client.Company", return_value=mock_company)
+
+    events = EdgarClient().get_material_events("GOLD", days=30)
+
+    assert events[0].item_codes == []
+    assert events[0].description == "Corporate Update"
+
+
+def test_get_material_events_handles_no_filings(mocker: MockerFixture) -> None:
+    mock_company = mocker.MagicMock()
+    mock_company.get_filings.return_value = []
+    mocker.patch("src.integrations.edgar.client.Company", return_value=mock_company)
+
+    events = EdgarClient().get_material_events("UNKN", days=30)
+
+    assert events == []
+
+
+def test_get_material_events_passes_start_date_to_get_filings(mocker: MockerFixture) -> None:
+    from datetime import timedelta
+
+    mock_company = mocker.MagicMock()
+    mock_company.get_filings.return_value = []
+    mocker.patch("src.integrations.edgar.client.Company", return_value=mock_company)
+
+    EdgarClient().get_material_events("GOLD", days=14)
+
+    call_kwargs = mock_company.get_filings.call_args.kwargs
+    expected_start = (date.today() - timedelta(days=14)).strftime("%Y-%m-%d")
+    assert call_kwargs["start_date"] == expected_start
+    assert call_kwargs["form"] == "8-K"
+
+
+# ---------------------------------------------------------------------------
+# get_institutional_holders + cache
+# ---------------------------------------------------------------------------
+
+
+def test_get_institutional_holders_reads_from_cache(mocker: MockerFixture, tmp_path: Path) -> None:
+    cache_data = {
+        "2026-Q2": {
+            "GOLD": [
+                {
+                    "fund_name": "VAN ECK ASSOCIATES CORP",
+                    "cik": 869178,
+                    "shares": 5_000_000.0,
+                    "value_usd": 150_000.0,
+                    "report_period": "2025-12-31",
+                    "prior_shares": 4_000_000.0,
+                    "change": 1_000_000.0,
+                }
+            ]
+        }
+    }
+    cache_file = tmp_path / "edgar_13f_cache.json"
+    cache_file.write_text(json.dumps(cache_data))
+    mocker.patch.object(EdgarClient, "_current_quarter", return_value="2026-Q2")
+
+    snapshot = EdgarClient(cache_file=cache_file).get_institutional_holders("GOLD")
+
+    assert snapshot.ticker == "GOLD"
+    assert len(snapshot.holders) == 1
+    assert snapshot.holders[0].fund_name == "VAN ECK ASSOCIATES CORP"
+    assert snapshot.total_institutional_shares == 5_000_000.0
+    assert snapshot.net_change_shares == 1_000_000.0
+
+
+def test_get_institutional_holders_rebuilds_cache_on_quarter_miss(mocker: MockerFixture, tmp_path: Path) -> None:
+    cache_file = tmp_path / "edgar_13f_cache.json"
+    mocker.patch.object(EdgarClient, "_current_quarter", return_value="2026-Q2")
+    mocker.patch.object(
+        EdgarClient,
+        "_build_quarterly_cache",
+        return_value={
+            "GOLD": [
+                {
+                    "fund_name": "SPROTT INC.",
+                    "cik": 1512920,
+                    "shares": 2_000_000.0,
+                    "value_usd": 60_000.0,
+                    "report_period": "2025-12-31",
+                    "prior_shares": None,
+                    "change": None,
+                }
+            ]
+        },
+    )
+
+    snapshot = EdgarClient(cache_file=cache_file).get_institutional_holders("GOLD")
+
+    assert len(snapshot.holders) == 1
+    assert snapshot.holders[0].fund_name == "SPROTT INC."
+    assert cache_file.exists()
+    written = json.loads(cache_file.read_text())
+    assert "2026-Q2" in written
+
+
+def test_get_institutional_holders_does_not_rebuild_when_cache_current(mocker: MockerFixture, tmp_path: Path) -> None:
+    cache_file = tmp_path / "edgar_13f_cache.json"
+    cache_file.write_text(json.dumps({"2026-Q2": {}}))
+    mocker.patch.object(EdgarClient, "_current_quarter", return_value="2026-Q2")
+    build_mock = mocker.patch.object(EdgarClient, "_build_quarterly_cache")
+
+    EdgarClient(cache_file=cache_file).get_institutional_holders("GOLD")
+
+    build_mock.assert_not_called()
+
+
+def test_get_institutional_holders_returns_empty_for_unheld_ticker(mocker: MockerFixture, tmp_path: Path) -> None:
+    cache_file = tmp_path / "edgar_13f_cache.json"
+    cache_file.write_text(json.dumps({"2026-Q2": {"NEM": []}}))
+    mocker.patch.object(EdgarClient, "_current_quarter", return_value="2026-Q2")
+
+    snapshot = EdgarClient(cache_file=cache_file).get_institutional_holders("UNKN")
+
+    assert snapshot.ticker == "UNKN"
+    assert len(snapshot.holders) == 0
+    assert snapshot.total_institutional_shares == 0.0
+    assert snapshot.net_change_shares == 0.0
+
+
+def test_get_institutional_holders_ticker_lookup_is_case_insensitive(mocker: MockerFixture, tmp_path: Path) -> None:
+    cache_data = {
+        "2026-Q2": {
+            "GOLD": [
+                {
+                    "fund_name": "VAN ECK ASSOCIATES CORP",
+                    "cik": 869178,
+                    "shares": 1_000_000.0,
+                    "value_usd": 30_000.0,
+                    "report_period": "2025-12-31",
+                    "prior_shares": None,
+                    "change": None,
+                }
+            ]
+        }
+    }
+    cache_file = tmp_path / "edgar_13f_cache.json"
+    cache_file.write_text(json.dumps(cache_data))
+    mocker.patch.object(EdgarClient, "_current_quarter", return_value="2026-Q2")
+
+    snapshot = EdgarClient(cache_file=cache_file).get_institutional_holders("gold")
+
+    assert len(snapshot.holders) == 1
