@@ -8,6 +8,7 @@ that is fetched once per quarter and cached locally.
 from __future__ import annotations
 
 import json
+import logging
 import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -30,6 +31,8 @@ from src.schemas.edgar import (
 
 if TYPE_CHECKING:
     from src.config import Settings
+
+_logger = logging.getLogger(__name__)
 
 _EDGAR_8K_ITEM_NAMES: dict[str, str] = {
     "1.01": "Material Agreement",
@@ -86,7 +89,8 @@ class EdgarClient:
                         price_per_share=None,
                     )
                 )
-            except Exception:  # noqa: S112
+            except Exception:
+                _logger.warning("Skipping malformed Form 4 filing for %s", ticker, exc_info=True)
                 continue
 
         buys = [t for t in transactions if t.is_buy]
@@ -120,7 +124,8 @@ class EdgarClient:
                         url=str(filing.url or ""),
                     )
                 )
-            except Exception:  # noqa: S112
+            except Exception:
+                _logger.warning("Skipping malformed 8-K filing for %s", ticker, exc_info=True)
                 continue
         return events
 
@@ -206,7 +211,8 @@ class EdgarClient:
                             "change": change,
                         }
                     )
-            except Exception:  # noqa: S112
+            except Exception:
+                _logger.warning("Skipping 13F fetch for fund CIK %s (%s)", cik, fund_name, exc_info=True)
                 continue
             time.sleep(EDGAR_THROTTLE_SECONDS)
 
