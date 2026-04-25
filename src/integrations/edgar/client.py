@@ -129,16 +129,21 @@ class EdgarClient:
                 continue
         return events
 
-    def get_institutional_holders(self, ticker: str) -> InstitutionalSnapshot:
-        """Return curated institutional holders of `ticker` from the most recent 13F cycle."""
+    def warm_cache(self) -> None:
+        """Ensure the 13F quarterly cache is current, building it if needed (~10s on first call per quarter)."""
         quarter = self._current_quarter()
         cache = self._load_cache()
-
         if quarter not in cache:
+            _logger.info("Building 13F quarterly cache for %s", quarter)
             cache[quarter] = self._build_quarterly_cache()
             self._save_cache(cache)
+            _logger.info("13F cache built with %d tickers", len(cache[quarter]))
 
-        raw_holders = cache[quarter].get(ticker.upper(), [])
+    def get_institutional_holders(self, ticker: str) -> InstitutionalSnapshot:
+        """Return curated institutional holders of `ticker` from the most recent 13F cycle."""
+        self.warm_cache()
+        quarter = self._current_quarter()
+        raw_holders = self._load_cache()[quarter].get(ticker.upper(), [])
         holders = [InstitutionalHolder(**h) for h in raw_holders]
         return InstitutionalSnapshot(
             ticker=ticker,
@@ -224,4 +229,6 @@ def make_edgar_client(settings: Settings) -> EdgarClient:
     if not settings.edgar_identity:
         raise ValueError("EDGAR_IDENTITY is not set")
     set_identity(settings.edgar_identity)
-    return EdgarClient()
+    client = EdgarClient()
+    client.warm_cache()
+    return client

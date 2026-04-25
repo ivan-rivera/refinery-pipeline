@@ -242,12 +242,14 @@ def test_get_insider_transactions_empty_filings(mocker: MockerFixture) -> None:
 
 def test_make_edgar_client_calls_set_identity(mocker: MockerFixture) -> None:
     mock_set = mocker.patch("src.integrations.edgar.client.set_identity")
+    mock_warm = mocker.patch.object(EdgarClient, "warm_cache")
     settings = mocker.MagicMock()
     settings.edgar_identity = "Test User test@example.com"
 
     client = make_edgar_client(settings)
 
     mock_set.assert_called_once_with("Test User test@example.com")
+    mock_warm.assert_called_once()
     assert isinstance(client, EdgarClient)
 
 
