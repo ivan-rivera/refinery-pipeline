@@ -16,6 +16,7 @@ dependencies = [
     "pandas>=2.2.0",
     "alpaca-py>=0.38.0",
     "finnhub-python>=2.4.0",
+    "requests>=2.32.0",
 ]
 
 [project.scripts]
@@ -36,6 +37,7 @@ dev = [
     "pre-commit>=4.5.1",
     "mypy>=1.19.1",
     "commitizen>=4.13.7",
+    "types-requests>=2.32.0",
 ]
 
 [build-system]

@@ -13,10 +13,13 @@ lint:
     uv run pre-commit run --all-files
 
 test:
-    uv run pytest tests/ -v --cov=src --cov-report=term-missing
+    uv run pytest tests/ -v --cov=src --cov-report=term-missing -m "not integration"
+
+test-integration:
+    uv run pytest tests/ -v -m "integration"
 
 coverage:
-    uv run pytest tests/ -v --cov=src --cov-report=html
+    uv run pytest tests/ -v --cov=src --cov-report=html -m "not integration"
 
 version-check:
     uv run cz bump --dry-run --yes || [ $? -eq 21 ]
