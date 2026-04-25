@@ -2,13 +2,11 @@
 
 from __future__ import annotations
 
-import json
 from datetime import date
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-
+from src.integrations.edgar.client import EdgarClient, make_edgar_client
 from src.schemas.edgar import (
     InsiderSummary,
     InsiderTransaction,
@@ -131,3 +129,129 @@ def test_material_event_fields():
     )
     assert "2.02" in event.item_codes
     assert event.filed_at == date(2026, 4, 20)
+
+
+# ---------------------------------------------------------------------------
+# get_insider_transactions
+# ---------------------------------------------------------------------------
+
+
+def test_get_insider_transactions_returns_buy_summary(mocker: MockerFixture) -> None:
+    mock_form4 = mocker.MagicMock()
+    mock_form4.get_net_shares_traded.return_value = 50_000
+    mock_form4.insider_name = "Jane Smith"
+    mock_form4.position = "CEO"
+
+    mock_filing = mocker.MagicMock()
+    mock_filing.filing_date = date(2026, 3, 1)
+    mock_filing.obj.return_value = mock_form4
+
+    mock_company = mocker.MagicMock()
+    mock_company.get_filings.return_value = [mock_filing]
+    mocker.patch("src.integrations.edgar.client.Company", return_value=mock_company)
+
+    summary = EdgarClient().get_insider_transactions("GOLD", days=90)
+
+    assert summary.ticker == "GOLD"
+    assert summary.buy_count == 1
+    assert summary.sell_count == 0
+    assert summary.net_shares == 50_000.0
+    assert summary.transactions[0].is_buy is True
+    assert summary.transactions[0].insider_name == "Jane Smith"
+
+
+def test_get_insider_transactions_returns_sell_summary(mocker: MockerFixture) -> None:
+    mock_form4 = mocker.MagicMock()
+    mock_form4.get_net_shares_traded.return_value = -20_000
+    mock_form4.insider_name = "Bob Jones"
+    mock_form4.position = "Director"
+
+    mock_filing = mocker.MagicMock()
+    mock_filing.filing_date = date(2026, 3, 15)
+    mock_filing.obj.return_value = mock_form4
+
+    mock_company = mocker.MagicMock()
+    mock_company.get_filings.return_value = [mock_filing]
+    mocker.patch("src.integrations.edgar.client.Company", return_value=mock_company)
+
+    summary = EdgarClient().get_insider_transactions("NEM", days=90)
+
+    assert summary.buy_count == 0
+    assert summary.sell_count == 1
+    assert summary.net_shares == -20_000.0
+    assert summary.transactions[0].is_buy is False
+    assert summary.transactions[0].shares == 20_000.0
+
+
+def test_get_insider_transactions_skips_zero_net(mocker: MockerFixture) -> None:
+    mock_form4 = mocker.MagicMock()
+    mock_form4.get_net_shares_traded.return_value = 0
+    mock_form4.insider_name = "Alice"
+    mock_form4.position = "VP"
+
+    mock_filing = mocker.MagicMock()
+    mock_filing.filing_date = date(2026, 3, 1)
+    mock_filing.obj.return_value = mock_form4
+
+    mock_company = mocker.MagicMock()
+    mock_company.get_filings.return_value = [mock_filing]
+    mocker.patch("src.integrations.edgar.client.Company", return_value=mock_company)
+
+    summary = EdgarClient().get_insider_transactions("GOLD", days=90)
+
+    assert summary.buy_count == 0
+    assert summary.sell_count == 0
+    assert len(summary.transactions) == 0
+
+
+def test_get_insider_transactions_skips_parse_errors(mocker: MockerFixture) -> None:
+    mock_filing_bad = mocker.MagicMock()
+    mock_filing_bad.filing_date = date(2026, 3, 1)
+    mock_filing_bad.obj.side_effect = ValueError("parse failed")
+
+    mock_form4 = mocker.MagicMock()
+    mock_form4.get_net_shares_traded.return_value = 5_000
+    mock_form4.insider_name = "Good Insider"
+    mock_form4.position = "CFO"
+    mock_filing_good = mocker.MagicMock()
+    mock_filing_good.filing_date = date(2026, 3, 10)
+    mock_filing_good.obj.return_value = mock_form4
+
+    mock_company = mocker.MagicMock()
+    mock_company.get_filings.return_value = [mock_filing_bad, mock_filing_good]
+    mocker.patch("src.integrations.edgar.client.Company", return_value=mock_company)
+
+    summary = EdgarClient().get_insider_transactions("GOLD", days=90)
+
+    assert summary.buy_count == 1
+
+
+def test_get_insider_transactions_empty_filings(mocker: MockerFixture) -> None:
+    mock_company = mocker.MagicMock()
+    mock_company.get_filings.return_value = []
+    mocker.patch("src.integrations.edgar.client.Company", return_value=mock_company)
+
+    summary = EdgarClient().get_insider_transactions("UNKN", days=90)
+
+    assert summary.buy_count == 0
+    assert summary.sell_count == 0
+    assert summary.net_shares == 0.0
+
+
+def test_make_edgar_client_calls_set_identity(mocker: MockerFixture) -> None:
+    mock_set = mocker.patch("src.integrations.edgar.client.set_identity")
+    settings = mocker.MagicMock()
+    settings.edgar_identity = "Test User test@example.com"
+
+    client = make_edgar_client(settings)
+
+    mock_set.assert_called_once_with("Test User test@example.com")
+    assert isinstance(client, EdgarClient)
+
+
+def test_make_edgar_client_raises_when_identity_empty(mocker: MockerFixture) -> None:
+    settings = mocker.MagicMock()
+    settings.edgar_identity = ""
+
+    with pytest.raises(ValueError, match="EDGAR_IDENTITY"):
+        make_edgar_client(settings)
