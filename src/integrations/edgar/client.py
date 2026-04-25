@@ -64,12 +64,10 @@ class EdgarClient:
     def get_insider_transactions(self, ticker: str, days: int = 90) -> InsiderSummary:
         """Return a summary of insider buy/sell activity for `ticker` over the last `days` days."""
         today = datetime.now(tz=UTC).date()
-        start = today - timedelta(days=days)
-        end = today
         filings = Company(ticker).get_filings(
             form="4",
-            start_date=start.strftime("%Y-%m-%d"),
-            end_date=end.strftime("%Y-%m-%d"),
+            start_date=(today - timedelta(days=days)).strftime("%Y-%m-%d"),
+            end_date=today.strftime("%Y-%m-%d"),
         )
         transactions: list[InsiderTransaction] = []
         for filing in filings:
@@ -111,16 +109,19 @@ class EdgarClient:
         )
         events: list[MaterialEvent] = []
         for filing in filings:
-            raw = filing.parsed_items or ""
-            codes = [c.strip() for c in raw.split(",") if c.strip()]
-            events.append(
-                MaterialEvent(
-                    filed_at=filing.filing_date,
-                    item_codes=codes,
-                    description=_describe_8k_items(codes),
-                    url=str(filing.url or ""),
+            try:
+                raw = filing.parsed_items or ""
+                codes = [c.strip() for c in raw.split(",") if c.strip()]
+                events.append(
+                    MaterialEvent(
+                        filed_at=filing.filing_date,
+                        item_codes=codes,
+                        description=_describe_8k_items(codes),
+                        url=str(filing.url or ""),
+                    )
                 )
-            )
+            except Exception:  # noqa: S112
+                continue
         return events
 
     def get_institutional_holders(self, ticker: str) -> InstitutionalSnapshot:

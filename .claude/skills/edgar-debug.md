@@ -13,10 +13,10 @@ Run all commands from the worktree root with `uv run python -c "..."`.
 
 ## Load the identity
 
-Before running any snippet, load the env:
+Before running any snippet, load the env (from the project root):
 
 ```bash
-set -a && source /Users/ivr/Documents/projects/refinery-pipeline/.env && set +a
+set -a && source "$(git rev-parse --show-toplevel)/.env" && set +a
 ```
 
 Verify identity is set:
