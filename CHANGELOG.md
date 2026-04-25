@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.7.0 (2026-04-25)
+
+### Feat
+
+- **reddit**: add RedditClient with throttling and comment parsing
+- **reddit**: add Comment and Thread schema models with to_text()
+
+### Fix
+
+- **ci**: exclude integration tests from just test and coverage recipes
+- **reddit**: resolve lint errors and guard None body in _parse_comment
+
+### Refactor
+
+- **reddit**: replace magic kind/body strings with named constants
+- **reddit**: move throttle interval to REDDIT_THROTTLE_SECONDS constant
+
 ## v0.6.0 (2026-04-23)
 
 ### Feat
