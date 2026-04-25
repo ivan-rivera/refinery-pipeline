@@ -1491,7 +1491,7 @@ test = [
 requires-dist = [
     { name = "alpaca-py", specifier = ">=0.38.0" },
     { name = "click", specifier = ">=8.1.0" },
-    { name = "edgartools", specifier = ">=2.0.0" },
+    { name = "edgartools", specifier = ">=5.30.0,<6" },
     { name = "finnhub-python", specifier = ">=2.4.0" },
     { name = "google-auth", specifier = ">=2.35.0" },
     { name = "gspread", specifier = ">=6.1.0" },
