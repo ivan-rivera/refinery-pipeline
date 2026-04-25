@@ -17,6 +17,7 @@ dependencies = [
     "alpaca-py>=0.38.0",
     "finnhub-python>=2.4.0",
     "requests>=2.32.0",
+    "edgartools>=2.0.0",
 ]
 
 [project.scripts]
@@ -132,6 +133,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["finnhub"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["edgar.*"]
 ignore_missing_imports = true
 
 [tool.commitizen]
