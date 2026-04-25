@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -265,9 +265,7 @@ def test_make_edgar_client_raises_when_identity_empty(mocker: MockerFixture) -> 
 
 
 def test_get_material_events_returns_recent_events(mocker: MockerFixture) -> None:
-    from datetime import timedelta
-
-    today = date.today()
+    today = datetime.now(tz=UTC).date()
     mock_filing = mocker.MagicMock()
     mock_filing.filing_date = today - timedelta(days=5)
     mock_filing.parsed_items = "2.02, 5.02"
@@ -286,9 +284,7 @@ def test_get_material_events_returns_recent_events(mocker: MockerFixture) -> Non
 
 
 def test_get_material_events_handles_empty_items(mocker: MockerFixture) -> None:
-    from datetime import timedelta
-
-    today = date.today()
+    today = datetime.now(tz=UTC).date()
     mock_filing = mocker.MagicMock()
     mock_filing.filing_date = today - timedelta(days=2)
     mock_filing.parsed_items = ""
@@ -315,8 +311,6 @@ def test_get_material_events_handles_no_filings(mocker: MockerFixture) -> None:
 
 
 def test_get_material_events_passes_start_date_to_get_filings(mocker: MockerFixture) -> None:
-    from datetime import timedelta
-
     mock_company = mocker.MagicMock()
     mock_company.get_filings.return_value = []
     mocker.patch("src.integrations.edgar.client.Company", return_value=mock_company)
@@ -324,7 +318,7 @@ def test_get_material_events_passes_start_date_to_get_filings(mocker: MockerFixt
     EdgarClient().get_material_events("GOLD", days=14)
 
     call_kwargs = mock_company.get_filings.call_args.kwargs
-    expected_start = (date.today() - timedelta(days=14)).strftime("%Y-%m-%d")
+    expected_start = (datetime.now(tz=UTC).date() - timedelta(days=14)).strftime("%Y-%m-%d")
     assert call_kwargs["start_date"] == expected_start
     assert call_kwargs["form"] == "8-K"
 

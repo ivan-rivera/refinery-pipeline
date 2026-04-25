@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import json
 import time
-from datetime import date, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from edgar import Company, set_identity  # type: ignore[import-untyped]
+from edgar import Company, set_identity
 
 from src.constants import (
     EDGAR_CACHE_FILE,
@@ -63,8 +63,9 @@ class EdgarClient:
 
     def get_insider_transactions(self, ticker: str, days: int = 90) -> InsiderSummary:
         """Return a summary of insider buy/sell activity for `ticker` over the last `days` days."""
-        start = date.today() - timedelta(days=days)
-        end = date.today()
+        today = datetime.now(tz=UTC).date()
+        start = today - timedelta(days=days)
+        end = today
         filings = Company(ticker).get_filings(
             form="4",
             start_date=start.strftime("%Y-%m-%d"),
@@ -87,7 +88,7 @@ class EdgarClient:
                         price_per_share=None,
                     )
                 )
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: S112
                 continue
 
         buys = [t for t in transactions if t.is_buy]
@@ -103,7 +104,7 @@ class EdgarClient:
 
     def get_material_events(self, ticker: str, days: int = 30) -> list[MaterialEvent]:
         """Return recent 8-K material events for `ticker` filed within the last `days` days."""
-        cutoff = date.today() - timedelta(days=days)
+        cutoff = datetime.now(tz=UTC).date() - timedelta(days=days)
         filings = Company(ticker).get_filings(
             form="8-K",
             start_date=cutoff.strftime("%Y-%m-%d"),
@@ -146,7 +147,7 @@ class EdgarClient:
     # ------------------------------------------------------------------
 
     def _current_quarter(self) -> str:
-        today = date.today()
+        today = datetime.now(tz=UTC).date()
         q = (today.month - 1) // 3 + 1
         return f"{today.year}-Q{q}"
 
@@ -154,7 +155,7 @@ class EdgarClient:
         if not self._cache_file.exists():
             return {}
         with self._cache_file.open() as fh:
-            return json.load(fh)  # type: ignore[no-any-return]
+            return json.load(fh)
 
     def _save_cache(self, data: dict[str, dict[str, list[dict[str, Any]]]]) -> None:
         self._cache_file.parent.mkdir(parents=True, exist_ok=True)
@@ -204,7 +205,7 @@ class EdgarClient:
                             "change": change,
                         }
                     )
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: S112
                 continue
             time.sleep(EDGAR_THROTTLE_SECONDS)
 
