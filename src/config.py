@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     google_sheet_id_prod: str = Field(default="", alias="GOOGLE_SHEET_ID_PROD")
     twelvedata_api_key: str = Field(default="", alias="TWELVEDATA_API_KEY")
     finnhub_api_key: str = Field(default="", alias="FINNHUB_API_KEY")
+    fred_api_key: str = Field(default="", alias="FRED_API_KEY")
     edgar_identity: str = Field(default="", alias="EDGAR_IDENTITY")
 
     alpaca_api_key_test: str = Field(default="", alias="TEST_ALPACA_API_KEY")

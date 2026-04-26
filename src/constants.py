@@ -14,6 +14,16 @@ PRECIOUS_METALS_SUBREDDITS = ["wallstreetsilver", "goldsilver", "mining", "inves
 EDGAR_THROTTLE_SECONDS = 0.2
 EDGAR_CACHE_FILE = Path("data/cache/edgar_13f_cache.json")
 
+FRED_SERIES_DFII10 = "DFII10"  # 10-Year TIPS real yield (daily)
+FRED_SERIES_T10YIE = "T10YIE"  # 10-Year breakeven inflation rate (daily)
+FRED_SERIES_DTWEXBGS = "DTWEXBGS"  # Nominal broad USD index (daily)
+FRED_SERIES_VIXCLS = "VIXCLS"  # CBOE VIX (daily)
+FRED_SERIES_FEDFUNDS = "FEDFUNDS"  # Effective federal funds rate (monthly)
+FRED_SERIES_INDPRO = "INDPRO"  # Industrial production index (monthly)
+FRED_SERIES_CPIAUCSL = "CPIAUCSL"  # CPI all urban consumers (monthly)
+FRED_SERIES_WPU10 = "WPU10"  # PPI metals & metal products (monthly)
+FRED_OBSERVATION_WINDOW_DAYS = 90  # Calendar days of history fetched per series (90d ensures 2+ monthly obs)
+
 EDGAR_INSTITUTIONAL_CIKS: dict[str, int] = {
     # Precious metals specialists
     "VAN ECK ASSOCIATES CORP": 869178,

@@ -16,6 +16,7 @@ dependencies = [
     "pandas>=2.2.0",
     "alpaca-py>=0.38.0",
     "finnhub-python>=2.4.0",
+    "fredapi>=0.5.1",
     "requests>=2.32.0",
     "edgartools>=5.30.0,<6",
 ]
@@ -137,6 +138,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = ["edgar.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["fredapi.*"]
 ignore_missing_imports = true
 
 [tool.commitizen]
