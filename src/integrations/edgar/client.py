@@ -34,6 +34,8 @@ if TYPE_CHECKING:
 
 _logger = logging.getLogger(__name__)
 
+_HolderRecord = dict[str, Any]
+
 _EDGAR_8K_ITEM_NAMES: dict[str, str] = {
     "1.01": "Material Agreement",
     "1.02": "Termination of Material Agreement",
@@ -56,6 +58,42 @@ def _describe_8k_items(item_codes: list[str]) -> str:
     if not item_codes:
         return "Corporate Update"
     return ", ".join(_EDGAR_8K_ITEM_NAMES.get(code, code) for code in item_codes)
+
+
+def _holding_from_row(
+    fund_name: str,
+    cik: int,
+    report_period: str,
+    row: Any,
+    prev_df: Any,
+) -> tuple[str, _HolderRecord] | None:
+    """Extract a single holder record from a 13F holdings DataFrame row.
+
+    Returns (ticker, record) or None if the row has no usable ticker.
+    """
+    ticker = str(row.get("Ticker", "") or "").upper()
+    if not ticker:
+        return None
+
+    shares = float(row.get("SharesPrnAmount", 0) or 0)
+    prior_shares: float | None = None
+    change: float | None = None
+
+    if prev_df is not None and not prev_df.empty:
+        prev_rows = prev_df[prev_df["Ticker"] == ticker]
+        if not prev_rows.empty:
+            prior_shares = float(prev_rows.iloc[0].get("SharesPrnAmount", 0) or 0)
+            change = shares - prior_shares
+
+    return ticker, {
+        "fund_name": fund_name,
+        "cik": cik,
+        "shares": shares,
+        "value_usd": float(row.get("Value", 0) or 0),
+        "report_period": report_period,
+        "prior_shares": prior_shares,
+        "change": change,
+    }
 
 
 class EdgarClient:
@@ -162,20 +200,20 @@ class EdgarClient:
         q = (today.month - 1) // 3 + 1
         return f"{today.year}-Q{q}"
 
-    def _load_cache(self) -> dict[str, dict[str, list[dict[str, Any]]]]:
+    def _load_cache(self) -> dict[str, dict[str, list[_HolderRecord]]]:
         if not self._cache_file.exists():
             return {}
         with self._cache_file.open() as fh:
             return json.load(fh)
 
-    def _save_cache(self, data: dict[str, dict[str, list[dict[str, Any]]]]) -> None:
+    def _save_cache(self, data: dict[str, dict[str, list[_HolderRecord]]]) -> None:
         self._cache_file.parent.mkdir(parents=True, exist_ok=True)
         with self._cache_file.open("w") as fh:
             json.dump(data, fh)
 
-    def _build_quarterly_cache(self) -> dict[str, list[dict[str, Any]]]:
+    def _build_quarterly_cache(self) -> dict[str, list[_HolderRecord]]:
         """Fetch all curated funds' latest 13F holdings and invert by ticker."""
-        inverted: dict[str, list[dict[str, Any]]] = {}
+        inverted: dict[str, list[_HolderRecord]] = {}
 
         for fund_name, cik in EDGAR_INSTITUTIONAL_CIKS.items():
             try:
@@ -183,39 +221,16 @@ class EdgarClient:
                 if filing is None:
                     continue
                 report = filing.obj()
-                holdings_df = report.holdings
-                if holdings_df is None or holdings_df.empty:
+                if report.holdings is None or report.holdings.empty:
                     continue
-
-                prev = report.previous_holding_report()
-                prev_df = prev.holdings if prev is not None else None
-
-                for _, row in holdings_df.iterrows():
-                    ticker = str(row.get("Ticker", "") or "").upper()
-                    if not ticker:
-                        continue
-                    shares = float(row.get("SharesPrnAmount", 0) or 0)
-                    value = float(row.get("Value", 0) or 0)
-
-                    prior_shares: float | None = None
-                    change: float | None = None
-                    if prev_df is not None and not prev_df.empty:
-                        prev_rows = prev_df[prev_df["Ticker"] == ticker]
-                        if not prev_rows.empty:
-                            prior_shares = float(prev_rows.iloc[0].get("SharesPrnAmount", 0) or 0)
-                            change = shares - prior_shares
-
-                    inverted.setdefault(ticker, []).append(
-                        {
-                            "fund_name": fund_name,
-                            "cik": cik,
-                            "shares": shares,
-                            "value_usd": value,
-                            "report_period": str(report.report_period or ""),
-                            "prior_shares": prior_shares,
-                            "change": change,
-                        }
-                    )
+                prev_df = report.previous_holding_report()
+                prev_holdings = prev_df.holdings if prev_df is not None else None
+                period = str(report.report_period or "")
+                for _, row in report.holdings.iterrows():
+                    result = _holding_from_row(fund_name, cik, period, row, prev_holdings)
+                    if result is not None:
+                        ticker, record = result
+                        inverted.setdefault(ticker, []).append(record)
             except Exception:
                 _logger.warning("Skipping 13F fetch for fund CIK %s (%s)", cik, fund_name, exc_info=True)
                 continue
