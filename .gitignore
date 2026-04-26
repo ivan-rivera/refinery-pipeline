@@ -38,3 +38,6 @@ data/*.sqlite3
 # Claude Code session memory
 .remember/
 docs/superpowers/
+
+# Worktree coordination (runtime state, not source)
+.claude/coordination/
