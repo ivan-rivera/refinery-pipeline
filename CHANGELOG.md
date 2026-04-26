@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.8.0 (2026-04-26)
+
+### Feat
+
+- **edgar**: warm 13F cache eagerly in make_edgar_client via warm_cache()
+- **edgar**: implement EdgarClient with get_insider_transactions and factory
+- **edgar**: add edgar_identity config field and institutional CIK constants
+- **edgar**: add typed schemas for insider, institutional, and 8-K data
+
+### Fix
+
+- **edgar**: add warning logs to exception handlers in EdgarClient
+- **edgar**: add per-filing guard to get_material_events, tighten version pin, fix debug skill path
+- **edgar**: resolve ruff and mypy lint violations in client and tests
+
+### Refactor
+
+- **edgar**: extract _holding_from_row, add _HolderRecord alias, simplify debug skill
+
 ## v0.7.0 (2026-04-25)
 
 ### Feat
