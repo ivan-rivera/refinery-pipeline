@@ -39,3 +39,6 @@ data/cache/
 # Claude Code session memory
 .remember/
 docs/superpowers/
+
+# Worktree coordination (runtime state, not source)
+.claude/coordination/

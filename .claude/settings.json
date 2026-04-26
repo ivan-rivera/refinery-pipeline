@@ -13,6 +13,17 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "MAIN=$(git rev-parse --git-common-dir 2>/dev/null | xargs -I{} dirname {}); [ -f \"$MAIN/.claude/hooks/coordination-check.sh\" ] && bash \"$MAIN/.claude/hooks/coordination-check.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

@@ -64,3 +64,53 @@ Each component lives in its own directory under `src/components/` and follows th
 To add a new implementation: create a new `.py` file in the component directory, implement a function matching the protocol, and add it to `_DEFAULT` in `__init__.py` (or pass it explicitly at the call site).
 
 To add a new component: create a new directory under `src/components/` following the same three-file structure.
+
+## Worktree Coordination
+
+When starting a **Complex** task, write your intent to the shared coordination directory so concurrent worktrees know what you are doing.
+
+Derive the main repo root at runtime:
+```bash
+MAIN=$(git rev-parse --git-common-dir | xargs dirname)
+COORD="$MAIN/.claude/coordination"
+```
+
+### On Complex task start
+
+```bash
+mkdir -p "$COORD/active"
+cat > "$COORD/active/$(basename $PWD).md" << EOF
+# <feature name>
+**Worktree:** $(basename $PWD)
+**Intent:** <1–2 sentence description>
+**Key files:** <comma-separated list of files being modified>
+**Known conflicts:** <other worktrees or shared files this might clash with, or "none">
+**Updated:** $(date -u +%Y-%m-%dT%H:%M:%SZ)
+EOF
+```
+
+Keep the file under 10 lines. This is a signal to other teams, not a design doc.
+
+### Sending a message to another team
+
+Discover active team names from `$COORD/active/` — each file is named after a worktree.
+
+```bash
+mkdir -p "$COORD/inbox/<target-worktree>"
+cat > "$COORD/inbox/<target-worktree>/$(date -u +%Y-%m-%dT%H-%M)_from-$(basename $PWD).md" << EOF
+**From:** $(basename $PWD)
+**To:** <target-worktree>
+**Date:** $(date -u +%Y-%m-%dT%H:%M:%SZ)
+**Message:** <concise message — what you need them to know or do>
+EOF
+```
+
+### On task completion
+
+```bash
+rm -f "$COORD/active/$(basename $PWD).md"
+```
+
+### What you see each turn
+
+The `UserPromptSubmit` hook automatically injects active worktree summaries and inbox messages at the start of each turn. Inbox messages are deleted after delivery — no manual cleanup needed.
