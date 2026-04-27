@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 def _daily_series(values: list[float]) -> pd.Series:
     """Build a daily pandas Series with the last value dated today."""
-    end = date.today()
+    end = datetime.now(tz=UTC).date()
     start = end - timedelta(days=len(values) - 1)
     idx = pd.date_range(start=str(start), end=str(end), freq="D")
     return pd.Series(values[-len(idx) :], index=idx)
@@ -85,11 +85,11 @@ def test_series_snapshot_latest_value_is_last_non_nan(client: FredClient, mock_f
 def test_series_snapshot_latest_date_is_today(client: FredClient, mock_fred: MagicMock) -> None:
     mock_fred.get_series.return_value = _daily_series([1.0] * 50)
     result = client.get_macro_snapshot()
-    assert result.real_yield_10y.latest_date == date.today()
+    assert result.real_yield_10y.latest_date == datetime.now(tz=UTC).date()
 
 
 def test_series_snapshot_delta_14d_computed_correctly(client: FredClient, mock_fred: MagicMock) -> None:
-    """delta_14d = latest_value − value of the last observation ≥14 days ago."""
+    """delta_14d = latest_value - value of the last observation >=14 days ago."""
     # Transition at day 26 from start (= 13 days ago), so the observation ≥14d ago is still 1.0.
     values = [1.0] * 26 + [2.0] * 14
     mock_fred.get_series.return_value = _daily_series(values)
