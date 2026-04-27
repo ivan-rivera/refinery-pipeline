@@ -8,6 +8,7 @@ from src.components.filter import filter as apply_filter
 from src.components.transform import transform as apply_transform
 from src.config import get_settings
 from src.console import console
+from src.integrations.fred import make_fred_client
 from src.integrations.sheets import make_sheets_client
 
 
@@ -30,6 +31,9 @@ def run(input_path: str | None, output_path: str | None, dry_run: bool) -> None:
 
     settings = get_settings()
     _sheets = make_sheets_client(settings, debug=dry_run)
+    fred_client = make_fred_client(settings)
+    macro_snapshot = fred_client.get_macro_snapshot()
+    console.print(f"  [dim]macro  :[/dim] FRED snapshot fetched ({macro_snapshot.fetched_at.strftime('%Y-%m-%d')})")
 
     filtered_data = apply_filter(None)
     apply_transform(filtered_data)
