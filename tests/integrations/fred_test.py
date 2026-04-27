@@ -9,7 +9,6 @@ from unittest.mock import MagicMock
 import numpy as np
 import pandas as pd
 import pytest
-
 from src.integrations.fred.client import FredClient, make_fred_client
 from src.schemas.fred import MacroSnapshot, SeriesSnapshot
 
@@ -50,9 +49,7 @@ def test_get_macro_snapshot_returns_macro_snapshot(client: FredClient, mock_fred
     assert isinstance(client.get_macro_snapshot(), MacroSnapshot)
 
 
-def test_get_macro_snapshot_all_series_fields_are_series_snapshots(
-    client: FredClient, mock_fred: MagicMock
-) -> None:
+def test_get_macro_snapshot_all_series_fields_are_series_snapshots(client: FredClient, mock_fred: MagicMock) -> None:
     mock_fred.get_series.return_value = _daily_series([2.0] * 50)
     result = client.get_macro_snapshot()
     for field in (
@@ -100,9 +97,7 @@ def test_series_snapshot_delta_14d_computed_correctly(client: FredClient, mock_f
     assert result.real_yield_10y.delta_14d == pytest.approx(1.0, abs=0.01)
 
 
-def test_series_snapshot_delta_14d_is_none_when_insufficient_history(
-    client: FredClient, mock_fred: MagicMock
-) -> None:
+def test_series_snapshot_delta_14d_is_none_when_insufficient_history(client: FredClient, mock_fred: MagicMock) -> None:
     """delta_14d is None when the series has fewer than 15 data points."""
     mock_fred.get_series.return_value = _daily_series([1.0, 1.5, 2.0])
     result = client.get_macro_snapshot()
@@ -116,9 +111,7 @@ def test_series_snapshot_delta_30d_computed_correctly(client: FredClient, mock_f
     assert result.real_yield_10y.delta_30d == pytest.approx(2.0, abs=0.01)
 
 
-def test_series_snapshot_delta_30d_is_none_when_insufficient_history(
-    client: FredClient, mock_fred: MagicMock
-) -> None:
+def test_series_snapshot_delta_30d_is_none_when_insufficient_history(client: FredClient, mock_fred: MagicMock) -> None:
     mock_fred.get_series.return_value = _daily_series([1.0, 2.0])
     result = client.get_macro_snapshot()
     assert result.real_yield_10y.delta_30d is None
