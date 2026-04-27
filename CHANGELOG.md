@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.10.0 (2026-04-27)
+
+### Feat
+
+- **fred**: add FRED integration layer (FredClient, MacroSnapshot, tests)
+
+### Fix
+
+- **fred**: replace date.today() with UTC-aware equivalent in tests
+
 ## v0.9.0 (2026-04-26)
 
 ### Feat
